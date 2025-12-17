@@ -49,6 +49,7 @@ class TaskResponse(BaseModel):
     tags: Optional[List['TagCompact']] = Field(description="Array of tags associated with this task. In order to change tags on an existing task use `addTag` and `removeTag`.", example=[{'gid': '59746', 'name': 'Grade A'}])
     workspace: Optional['WorkspaceCompact'] = None
     permalink_url: Optional[str] = Field(description="A url that points directly to the object within Asana.", example='https://app.asana.com/1/12345/task/123456789')
+    custom_id: Optional[str] = Field(None, description="An identifier for the task that can be used to reference it externally.")
 
     class Config:
         from_attributes = True
@@ -104,6 +105,7 @@ class TaskCreate(BaseModel):
     custom_type_status_option: Optional[dict] = None
     parent: Optional['TaskCompact'] = None
     workspace: Optional['WorkspaceCompact'] = None
+    custom_id: Optional[str] = Field(None, description="An identifier for the task that can be used to reference it externally.")
 
     class Config:
         from_attributes = True
@@ -137,6 +139,7 @@ class TaskUpdate(BaseModel):
     custom_type_status_option: Optional[dict] = None
     parent: Optional['TaskCompact'] = None
     workspace: Optional['WorkspaceCompact'] = None
+    custom_id: Optional[str] = Field(None, description="An identifier for the task that can be used to reference it externally.")
 
     class Config:
         from_attributes = True

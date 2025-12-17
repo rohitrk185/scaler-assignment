@@ -11,6 +11,16 @@ class EmptyResponse(BaseModel):
         from_attributes = True
 
 
+class AsanaNamedResource(BaseModel):
+    """A generic Asana Resource, containing a globally unique identifier."""
+    gid: str = Field(description="Globally unique identifier of the resource, as a string.", example='12345')
+    resource_type: str = Field(description="The base type of this resource.", example='task')
+    name: Optional[str] = Field(None, description="The name of the resource.", example='Buy catnip')
+
+    class Config:
+        from_attributes = True
+
+
 class WorkspaceAddUserRequest(BaseModel):
     """Request schema for adding a user to a workspace"""
     user: str = Field(description="A string identifying a user. This can either be the string 'me', an email, or the gid of a user.", example='12345')

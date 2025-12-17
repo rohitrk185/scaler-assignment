@@ -39,6 +39,7 @@ class Task(Base):
     start_on = Column(Date, nullable=True)
     actual_time_minutes = Column(Float, nullable=True)
     permalink_url = Column(String, nullable=True)
+    custom_id = Column(String, nullable=True, unique=True, index=True)
 
     # Relationships
     # TODO: Implement relationships

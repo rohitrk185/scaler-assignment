@@ -4,14 +4,19 @@ from sqlalchemy.orm import Session
 from typing import Optional, List, Dict, Any
 from app.database import get_db
 from app.models.workspace import Workspace
+from app.models.task import Task
 from app.schemas.workspace import WorkspaceResponse, WorkspaceUpdate
 from app.schemas.common import WorkspaceAddUserRequest, WorkspaceRemoveUserRequest, EmptyResponse
 from app.schemas.user import UserResponse
+from app.schemas.task import TaskResponse
 from app.models.user import User
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
 from app.utils.errors import NotFoundError
 from app.utils.request_parsing import parse_request_body
+from app.utils.search import TaskSearchParams, build_task_search_query
+from app.utils.typeahead import TypeaheadParams, search_typeahead
+from app.schemas.task import TaskCompact
 from app.config import settings
 
 router = APIRouter()
@@ -605,6 +610,206 @@ async def get_workspace_audit_log_events(
         # TODO: Implement audit log event tracking system
         # For now, return empty list
         return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/workspaces/{workspace_gid}/tasks/custom_id/{custom_id}", response_model=dict)
+async def get_task_by_custom_id(
+    workspace_gid: str,
+    custom_id: str,
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a task for a given custom ID.
+    
+    Returns a task given a custom ID shortcode.
+    """
+    try:
+        workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
+        
+        if not workspace:
+            raise NotFoundError("Workspace", workspace_gid)
+        
+        # Query task by custom_id
+        # Note: Since workspace relationship doesn't exist yet, we'll query by custom_id only
+        # TODO: Add workspace scoping when workspace-task relationship is implemented
+        task = db.query(Task).filter(Task.custom_id == custom_id).first()
+        
+        if not task:
+            raise NotFoundError("Task", custom_id)
+        
+        task_response = TaskResponse(
+            gid=task.gid,
+            resource_type=task.resource_type,
+            created_at=task.created_at,
+            updated_at=task.updated_at,
+            name=task.name,
+            resource_subtype=task.resource_subtype,
+            created_by=task.created_by,
+            approval_status=task.approval_status,
+            assignee_status=task.assignee_status,
+            completed=task.completed,
+            completed_at=task.completed_at,
+            due_at=task.due_at,
+            due_on=task.due_on,
+            external=task.external,
+            html_notes=task.html_notes,
+            hearted=task.hearted,
+            is_rendered_as_separator=task.is_rendered_as_separator,
+            liked=task.liked,
+            memberships=task.memberships,
+            modified_at=task.modified_at,
+            notes=task.notes,
+            num_hearts=task.num_hearts,
+            num_likes=task.num_likes,
+            num_subtasks=task.num_subtasks,
+            start_at=task.start_at,
+            start_on=task.start_on,
+            actual_time_minutes=task.actual_time_minutes,
+            permalink_url=task.permalink_url,
+            custom_id=task.custom_id,
+            dependencies=None,
+            dependents=None,
+            hearts=None,
+            likes=None,
+            custom_fields=None,
+            followers=None,
+            projects=None,
+            tags=None,
+            completed_by=None,
+            assignee=None,
+            assignee_section=None,
+            parent=None,
+            custom_type=None,
+            custom_type_status_option=None,
+            workspace=None
+        )
+        
+        return format_success_response(task_response)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/workspaces/{workspace_gid}/tasks/search", response_model=dict)
+async def search_tasks_for_workspace(
+    workspace_gid: str,
+    search_params: TaskSearchParams = Depends(),
+    pagination: PaginationParams = Depends(),
+    db: Session = Depends(get_db)
+):
+    """
+    Search tasks in a workspace.
+    
+    Performs a search across all tasks in a workspace. Supports full-text search
+    and numerous filters for refining results.
+    """
+    try:
+        workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
+        
+        if not workspace:
+            raise NotFoundError("Workspace", workspace_gid)
+        
+        # Build base query
+        base_query = db.query(Task)
+        
+        # Apply search filters
+        filtered_query = build_task_search_query(base_query, search_params)
+        
+        # Get results with pagination
+        offset_value = 0
+        if pagination.offset:
+            try:
+                offset_value = int(pagination.offset)
+            except (ValueError, TypeError):
+                offset_value = 0
+        
+        tasks = filtered_query.limit(pagination.limit).offset(offset_value).all()
+        
+        # Convert to TaskCompact responses
+        task_responses = [
+            TaskCompact(
+                gid=task.gid,
+                resource_type=task.resource_type or "task",
+                name=task.name or ""
+            )
+            for task in tasks
+        ]
+        
+        # Create paginated response
+        paginated = create_paginated_response(
+            items=task_responses,
+            limit=pagination.limit,
+            offset=pagination.offset,
+            base_path=f"{settings.API_V1_PREFIX}/workspaces/{workspace_gid}/tasks/search"
+        )
+        
+        return format_list_response(paginated.data)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/workspaces/{workspace_gid}/typeahead", response_model=dict)
+async def typeahead_for_workspace(
+    workspace_gid: str,
+    params: TypeaheadParams = Depends(),
+    db: Session = Depends(get_db)
+):
+    """
+    Get objects via typeahead search.
+    
+    Retrieves objects in the workspace based on an auto-completion/typeahead
+    search algorithm. This feature is meant to provide results quickly and should
+    not be relied upon for accurate or exhaustive search results.
+    """
+    try:
+        workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
+        
+        if not workspace:
+            raise NotFoundError("Workspace", workspace_gid)
+        
+        # Perform typeahead search
+        results = search_typeahead(
+            db=db,
+            workspace_gid=workspace_gid,
+            resource_type=params.resource_type,
+            query=params.query,
+            count=params.count
+        )
+        
+        return format_list_response(results)
     
     except NotFoundError as e:
         return format_error_response(
