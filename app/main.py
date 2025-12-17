@@ -42,8 +42,14 @@ async def health():
     """Health check endpoint"""
     return {"status": "healthy"}
 
-# API routes will be included here later
-# from app.api.v1 import workspaces, projects, tasks, users, teams, sections, attachments, stories, tags, webhooks, custom_fields
-# app.include_router(workspaces.router, prefix=settings.API_V1_PREFIX, tags=["Workspaces"])
+# API routes
+from app.api.v1 import workspaces
+
+app.include_router(workspaces.router, prefix=settings.API_V1_PREFIX, tags=["Workspaces"])
+
+# TODO: Add other routers as they are implemented
+# from app.api.v1 import projects, tasks, users, teams, sections, attachments, stories, tags, webhooks, custom_fields
+# app.include_router(projects.router, prefix=settings.API_V1_PREFIX, tags=["Projects"])
+# app.include_router(tasks.router, prefix=settings.API_V1_PREFIX, tags=["Tasks"])
 # ... (other routers)
 
