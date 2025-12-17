@@ -43,13 +43,20 @@ async def health():
     return {"status": "healthy"}
 
 # API routes
-from app.api.v1 import workspaces
+from app.api.v1 import (
+    workspaces, users, projects, tasks, teams, sections,
+    attachments, stories, tags, webhooks, custom_fields
+)
 
 app.include_router(workspaces.router, prefix=settings.API_V1_PREFIX, tags=["Workspaces"])
-
-# TODO: Add other routers as they are implemented
-# from app.api.v1 import projects, tasks, users, teams, sections, attachments, stories, tags, webhooks, custom_fields
-# app.include_router(projects.router, prefix=settings.API_V1_PREFIX, tags=["Projects"])
-# app.include_router(tasks.router, prefix=settings.API_V1_PREFIX, tags=["Tasks"])
-# ... (other routers)
+app.include_router(users.router, prefix=settings.API_V1_PREFIX, tags=["Users"])
+app.include_router(projects.router, prefix=settings.API_V1_PREFIX, tags=["Projects"])
+app.include_router(tasks.router, prefix=settings.API_V1_PREFIX, tags=["Tasks"])
+app.include_router(teams.router, prefix=settings.API_V1_PREFIX, tags=["Teams"])
+app.include_router(sections.router, prefix=settings.API_V1_PREFIX, tags=["Sections"])
+app.include_router(attachments.router, prefix=settings.API_V1_PREFIX, tags=["Attachments"])
+app.include_router(stories.router, prefix=settings.API_V1_PREFIX, tags=["Stories"])
+app.include_router(tags.router, prefix=settings.API_V1_PREFIX, tags=["Tags"])
+app.include_router(webhooks.router, prefix=settings.API_V1_PREFIX, tags=["Webhooks"])
+app.include_router(custom_fields.router, prefix=settings.API_V1_PREFIX, tags=["Custom Fields"])
 

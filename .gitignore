@@ -30,6 +30,20 @@ openapi_spec/
 # Logs
 *.log
 
+# Test results and outputs
+test_results.json
+*.test.json
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary fix/utility scripts (one-time use)
+scripts/fix_optional_fields.py
+
+# Temporary files from scripts
+*.tmp
+*.bak
+
 # OS
 .DS_Store
 Thumbs.db
