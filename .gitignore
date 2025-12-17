@@ -51,6 +51,12 @@ scripts/fix_optional_fields.py
 scripts/fix_request_body_format.py
 scripts/update_request_bodies.py
 
+# Test documentation and old test scripts
+scripts/BETTER_TEST_STRATEGY.md
+scripts/FIX_TEST_ISSUES.md
+scripts/README_TEST_API_COMPARISON.md
+scripts/test_api_comparison.py
+
 # Temporary files from scripts
 *.tmp
 *.bak
