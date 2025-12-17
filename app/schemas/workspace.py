@@ -47,7 +47,7 @@ from datetime import datetime, date
 class WorkspaceCreate(BaseModel):
     """Workspace create request schema"""
 
-    name: Optional[str] = Field(None, description="The name of the workspace.")
+    name: Optional[str] = Field(None, max_length=256, description="The name of the workspace.")
     email_domains: Optional[List[str]] = Field(None, description="The email domains that are associated with this workspace.")
     is_organization: Optional[bool] = Field(None, description="Whether the workspace is an *organization*.")
 
@@ -63,7 +63,7 @@ from datetime import datetime, date
 class WorkspaceUpdate(BaseModel):
     """Workspace update request schema"""
 
-    name: Optional[str] = Field(None, description="The name of the workspace.")
+    name: Optional[str] = Field(None, max_length=256, description="The name of the workspace.")
     email_domains: Optional[List[str]] = Field(None, description="The email domains that are associated with this workspace.")
     is_organization: Optional[bool] = Field(None, description="Whether the workspace is an *organization*.")
 

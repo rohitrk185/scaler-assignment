@@ -1,5 +1,5 @@
 """Projects API Endpoints"""
-from fastapi import APIRouter, Depends, Query, Body
+from fastapi import APIRouter, Depends, Query, Body, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional, Dict, Any
 import uuid
@@ -114,6 +114,10 @@ async def get_project(
     Returns the full record for a single project.
     """
     try:
+        # Validate GID format first (matches Asana behavior - returns 400 for invalid format)
+        from app.utils.gid_validation import validate_gid_format
+        validate_gid_format(project_gid, "project")
+        
         obj = db.query(Project).filter(Project.gid == project_gid).first()
         
         if not obj:
@@ -159,6 +163,8 @@ async def get_project(
         
         return format_success_response(obj_response)
     
+    except HTTPException:
+        raise
     except NotFoundError as e:
         return format_error_response(
             message=str(e.message),
@@ -262,6 +268,10 @@ async def update_project(
     Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
+        # Validate GID format first (matches Asana behavior - returns 400 for invalid format)
+        from app.utils.gid_validation import validate_gid_format
+        validate_gid_format(project_gid, "project")
+        
         obj = db.query(Project).filter(Project.gid == project_gid).first()
         
         if not obj:
@@ -270,7 +280,9 @@ async def update_project(
         # Parse request body following OpenAPI spec format: {"data": {...}}
         project_data = parse_request_body(request_body, ProjectUpdate)
         
+        # Note: Asana allows empty names for projects/tasks (only rejects for users)
         update_dict = project_data.model_dump(exclude_unset=True)
+        
         for field, value in update_dict.items():
             if hasattr(obj, field):
                 setattr(obj, field, value)
@@ -318,6 +330,8 @@ async def update_project(
         
         return format_success_response(obj_response)
     
+    except HTTPException:
+        raise
     except NotFoundError as e:
         return format_error_response(
             message=str(e.message),
@@ -403,7 +417,7 @@ async def duplicate_project(
             "status": "pending"
         }
         
-        return format_success_response(job_response)
+        return format_success_response(job_response, status_code=201)
     
     except NotFoundError as e:
         return format_error_response(
@@ -1170,6 +1184,19 @@ async def save_project_as_template(
         
         # Parse request body following OpenAPI spec format: {"data": {...}}
         template_data = parse_request_body(request_body, ProjectSaveAsTemplateRequest)
+        
+        # Validate required fields (Asana requires 'public' and either 'workspace' or 'team')
+        template_dict = template_data.model_dump(exclude_unset=True)
+        if "public" not in template_dict:
+            return format_error_response(
+                message="public: Missing input",
+                status_code=400
+            )
+        if "workspace" not in template_dict and "team" not in template_dict:
+            return format_error_response(
+                message="Must specify either workspace or team.",
+                status_code=400
+            )
         
         # TODO: Implement project template creation (returns JobResponse)
         # For now, return EmptyResponse

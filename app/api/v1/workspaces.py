@@ -16,6 +16,7 @@ from app.utils.errors import NotFoundError
 from app.utils.request_parsing import parse_request_body
 from app.utils.search import TaskSearchParams, build_task_search_query
 from app.utils.typeahead import TypeaheadParams, search_typeahead
+from app.utils.gid_validation import validate_gid_format
 from app.schemas.task import TaskCompact
 from app.config import settings
 
@@ -87,6 +88,9 @@ async def get_workspace(
     Returns the full record for a single workspace.
     """
     try:
+        # Validate GID format (numeric string or UUID)
+        validate_gid_format(workspace_gid, "workspace")
+        
         workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
         
         if not workspace:
@@ -131,6 +135,9 @@ async def update_workspace(
     Request body must follow OpenAPI spec format: {"data": {"name": "..."}}
     """
     try:
+        # Validate GID format (numeric string or UUID)
+        validate_gid_format(workspace_gid, "workspace")
+        
         workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
         
         if not workspace:
@@ -159,6 +166,9 @@ async def update_workspace(
         
         return format_success_response(workspace_response)
     
+    except HTTPException:
+        # Re-raise HTTPException (from validate_gid_format)
+        raise
     except NotFoundError as e:
         return format_error_response(
             message=str(e.message),

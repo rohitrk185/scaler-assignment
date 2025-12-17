@@ -1,5 +1,5 @@
 """Users API Endpoints"""
-from fastapi import APIRouter, Depends, Query, Body
+from fastapi import APIRouter, Depends, Query, Body, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional, Dict, Any
 from app.database import get_db
@@ -12,6 +12,25 @@ from app.utils.request_parsing import parse_request_body
 from app.config import settings
 
 router = APIRouter()
+
+
+@router.post("/users", response_model=dict)
+async def create_user(
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Create a user.
+    
+    Note: User creation via API is not allowed (matches Asana behavior).
+    Returns 403 Forbidden.
+    """
+    return format_error_response(
+        message="Forbidden",
+        status_code=403
+    )
 
 
 @router.get("/users", response_model=dict)
@@ -78,6 +97,10 @@ async def get_user(
     Returns the full record for a single user.
     """
     try:
+        # Validate GID format first (matches Asana behavior - returns 400 for invalid format)
+        from app.utils.gid_validation import validate_gid_format
+        validate_gid_format(user_gid, "user")
+        
         user = db.query(User).filter(User.gid == user_gid).first()
         
         if not user:
@@ -95,6 +118,8 @@ async def get_user(
         
         return format_success_response(user_response)
     
+    except HTTPException:
+        raise
     except NotFoundError as e:
         return format_error_response(
             message=str(e.message),
@@ -123,6 +148,10 @@ async def update_user(
     Request body must follow OpenAPI spec format: {"data": {"name": "..."}}
     """
     try:
+        # Validate GID format first (matches Asana behavior - returns 400 for invalid format)
+        from app.utils.gid_validation import validate_gid_format
+        validate_gid_format(user_gid, "user")
+        
         user = db.query(User).filter(User.gid == user_gid).first()
         
         if not user:
@@ -131,7 +160,14 @@ async def update_user(
         # Parse request body following OpenAPI spec format: {"data": {...}}
         user_data = parse_request_body(request_body, UserUpdate)
         
+        # Validate empty name (Asana rejects empty names)
         update_dict = user_data.model_dump(exclude_unset=True)
+        if "name" in update_dict and update_dict["name"] == "":
+            return format_error_response(
+                message="Name cannot be empty.",
+                status_code=400
+            )
+        
         for field, value in update_dict.items():
             if hasattr(user, field):
                 setattr(user, field, value)
@@ -151,6 +187,8 @@ async def update_user(
         
         return format_success_response(user_response)
     
+    except HTTPException:
+        raise
     except NotFoundError as e:
         return format_error_response(
             message=str(e.message),

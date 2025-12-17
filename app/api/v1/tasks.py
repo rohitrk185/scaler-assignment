@@ -1,5 +1,5 @@
 """Tasks API Endpoints"""
-from fastapi import APIRouter, Depends, Query, Body
+from fastapi import APIRouter, Depends, Query, Body, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional, Dict, Any
 import uuid
@@ -120,6 +120,10 @@ async def get_task(
     Returns the full record for a single task.
     """
     try:
+        # Validate GID format first (matches Asana behavior - returns 400 for invalid format)
+        from app.utils.gid_validation import validate_gid_format
+        validate_gid_format(task_gid, "task")
+        
         obj = db.query(Task).filter(Task.gid == task_gid).first()
         
         if not obj:
@@ -173,6 +177,8 @@ async def get_task(
         
         return format_success_response(obj_response)
     
+    except HTTPException:
+        raise
     except NotFoundError as e:
         return format_error_response(
             message=str(e.message),
@@ -284,6 +290,10 @@ async def update_task(
     Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
+        # Validate GID format first (matches Asana behavior - returns 400 for invalid format)
+        from app.utils.gid_validation import validate_gid_format
+        validate_gid_format(task_gid, "task")
+        
         obj = db.query(Task).filter(Task.gid == task_gid).first()
         
         if not obj:
@@ -292,7 +302,9 @@ async def update_task(
         # Parse request body following OpenAPI spec format: {"data": {...}}
         task_data = parse_request_body(request_body, TaskUpdate)
         
+        # Note: Asana allows empty names for projects/tasks (only rejects for users)
         update_dict = task_data.model_dump(exclude_unset=True)
+        
         for field, value in update_dict.items():
             if hasattr(obj, field):
                 setattr(obj, field, value)
@@ -348,6 +360,8 @@ async def update_task(
         
         return format_success_response(obj_response)
     
+    except HTTPException:
+        raise
     except NotFoundError as e:
         return format_error_response(
             message=str(e.message),
@@ -482,7 +496,7 @@ async def duplicate_task(
             "status": "pending"
         }
         
-        return format_success_response(job_response)
+        return format_success_response(job_response, status_code=201)
     
     except NotFoundError as e:
         return format_error_response(

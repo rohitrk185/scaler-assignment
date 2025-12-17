@@ -64,7 +64,7 @@ from datetime import datetime, date
 class UserUpdate(BaseModel):
     """User update request schema"""
 
-    name: Optional[str] = Field(None, description="*Read-only except when same user as requester*. The user's name.")
+    name: Optional[str] = Field(None, max_length=256, description="*Read-only except when same user as requester*. The user's name.")
     custom_fields: Optional[List['CustomFieldCompact']] = Field(None, description="Array of Custom Fields.")
 
     class Config:

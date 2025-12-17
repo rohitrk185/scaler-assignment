@@ -85,7 +85,7 @@ from datetime import datetime, date
 class TaskCreate(BaseModel):
     """Task create request schema"""
 
-    name: Optional[str] = Field(None, description="Name of the task. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer.")
+    name: Optional[str] = Field(None, max_length=256, description="Name of the task. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer.")
     resource_subtype: Optional[str] = Field(None, description="The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning. The resource_subtype `milestone` represent a single moment in time. This means tasks with this subtype cannot have a start_date.")
     approval_status: Optional[str] = Field(None, description="*Conditional* Reflects the approval status of this task. This field is kept in sync with `completed`, meaning `pending` translates to false while `approved`, `rejected`, and `changes_requested` translate to true. If you set completed to true, this field will be set to `approved`.")
     assignee_status: Optional[str] = Field(None, description="*Deprecated* Scheduling status of this task for the user it is assigned to. This field can only be set if the assignee is non-null. Setting this field to \"inbox\" or \"upcoming\" inserts it at the top of the section, while the other options will insert at the bottom.")
@@ -119,7 +119,7 @@ from datetime import datetime, date
 class TaskUpdate(BaseModel):
     """Task update request schema"""
 
-    name: Optional[str] = Field(None, description="Name of the task. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer.")
+    name: Optional[str] = Field(None, max_length=256, description="Name of the task. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer.")
     resource_subtype: Optional[str] = Field(None, description="The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning. The resource_subtype `milestone` represent a single moment in time. This means tasks with this subtype cannot have a start_date.")
     approval_status: Optional[str] = Field(None, description="*Conditional* Reflects the approval status of this task. This field is kept in sync with `completed`, meaning `pending` translates to false while `approved`, `rejected`, and `changes_requested` translate to true. If you set completed to true, this field will be set to `approved`.")
     assignee_status: Optional[str] = Field(None, description="*Deprecated* Scheduling status of this task for the user it is assigned to. This field can only be set if the assignee is non-null. Setting this field to \"inbox\" or \"upcoming\" inserts it at the top of the section, while the other options will insert at the bottom.")

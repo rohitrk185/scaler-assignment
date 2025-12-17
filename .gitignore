@@ -36,6 +36,7 @@ test_results.json
 *_results.json
 *results.json
 test_results_by_entity/
+test_results_focused/
 test_api_comparison_results.html
 *.test.html
 *_results.html
@@ -45,6 +46,9 @@ htmlcov/
 
 # Analysis and documentation (temporary)
 OPENAPI_COMPLIANCE_ANALYSIS.md
+API_FAILURE_ANALYSIS.md
+scripts/TEST_COVERAGE_PLAN.md
+scripts/generate_all_endpoint_tests.py
 
 # Temporary fix/utility scripts (one-time use)
 scripts/fix_optional_fields.py

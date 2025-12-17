@@ -76,7 +76,7 @@ from datetime import datetime, date
 class ProjectCreate(BaseModel):
     """Project create request schema"""
 
-    name: Optional[str] = Field(None, description="Name of the project. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer.")
+    name: Optional[str] = Field(None, max_length=256, description="Name of the project. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer.")
     archived: Optional[bool] = Field(None, description="True if the project is archived, false if not. Archived projects do not show in the UI by default and may be treated differently for queries.")
     color: Optional[str] = Field(None, description="Color of the project.")
     icon: Optional[str] = Field(None, description="The icon for a project.")
@@ -112,7 +112,7 @@ from datetime import datetime, date
 class ProjectUpdate(BaseModel):
     """Project update request schema"""
 
-    name: Optional[str] = Field(None, description="Name of the project. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer.")
+    name: Optional[str] = Field(None, max_length=256, description="Name of the project. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer.")
     archived: Optional[bool] = Field(None, description="True if the project is archived, false if not. Archived projects do not show in the UI by default and may be treated differently for queries.")
     color: Optional[str] = Field(None, description="Color of the project.")
     icon: Optional[str] = Field(None, description="The icon for a project.")
