@@ -1,7 +1,7 @@
 """Sections API Endpoints"""
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Body
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Dict, Any
 import uuid
 from app.database import get_db
 from app.models.section import Section
@@ -9,6 +9,7 @@ from app.schemas.section import SectionResponse, SectionCreate, SectionUpdate
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
 from app.utils.errors import NotFoundError
+from app.utils.request_parsing import parse_request_body
 from app.config import settings
 
 router = APIRouter()
@@ -110,7 +111,7 @@ async def get_section(
 
 @router.post("/sections", response_model=dict)
 async def create_section(
-    section_data: SectionCreate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -119,8 +120,12 @@ async def create_section(
     Create a section.
     
     Creates a new section.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        section_data = parse_request_body(request_body, SectionCreate)
+        
         new_obj = Section(
             gid=str(uuid.uuid4()),
             resource_type="section",
@@ -154,7 +159,7 @@ async def create_section(
 @router.put("/sections/{section_gid}", response_model=dict)
 async def update_section(
     section_gid: str,
-    section_data: SectionUpdate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -163,12 +168,16 @@ async def update_section(
     Update a section.
     
     Updates the fields of a section. Only the fields provided in the request will be updated.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
         obj = db.query(Section).filter(Section.gid == section_gid).first()
         
         if not obj:
             raise NotFoundError("Section", section_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        section_data = parse_request_body(request_body, SectionUpdate)
         
         update_dict = section_data.model_dump(exclude_unset=True)
         for field, value in update_dict.items():

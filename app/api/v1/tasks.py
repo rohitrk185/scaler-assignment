@@ -1,7 +1,7 @@
 """Tasks API Endpoints"""
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Body
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Dict, Any
 import uuid
 from app.database import get_db
 from app.models.task import Task
@@ -9,6 +9,7 @@ from app.schemas.task import TaskResponse, TaskCreate, TaskUpdate
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
 from app.utils.errors import NotFoundError
+from app.utils.request_parsing import parse_request_body
 from app.config import settings
 
 router = APIRouter()
@@ -182,7 +183,7 @@ async def get_task(
 
 @router.post("/tasks", response_model=dict)
 async def create_task(
-    task_data: TaskCreate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -191,8 +192,12 @@ async def create_task(
     Create a task.
     
     Creates a new task.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        task_data = parse_request_body(request_body, TaskCreate)
+        
         new_obj = Task(
             gid=str(uuid.uuid4()),
             resource_type="task",
@@ -262,7 +267,7 @@ async def create_task(
 @router.put("/tasks/{task_gid}", response_model=dict)
 async def update_task(
     task_gid: str,
-    task_data: TaskUpdate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -271,12 +276,16 @@ async def update_task(
     Update a task.
     
     Updates the fields of a task. Only the fields provided in the request will be updated.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
         obj = db.query(Task).filter(Task.gid == task_gid).first()
         
         if not obj:
             raise NotFoundError("Task", task_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        task_data = parse_request_body(request_body, TaskUpdate)
         
         update_dict = task_data.model_dump(exclude_unset=True)
         for field, value in update_dict.items():

@@ -1,7 +1,7 @@
 """Webhooks API Endpoints"""
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Body
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Dict, Any
 import uuid
 from app.database import get_db
 from app.models.webhook import Webhook
@@ -9,6 +9,7 @@ from app.schemas.webhook import WebhookResponse, WebhookCreate, WebhookUpdate
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
 from app.utils.errors import NotFoundError
+from app.utils.request_parsing import parse_request_body
 from app.config import settings
 
 router = APIRouter()
@@ -122,7 +123,7 @@ async def get_webhook(
 
 @router.post("/webhooks", response_model=dict)
 async def create_webhook(
-    webhook_data: WebhookCreate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -131,8 +132,12 @@ async def create_webhook(
     Create a webhook.
     
     Creates a new webhook.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        webhook_data = parse_request_body(request_body, WebhookCreate)
+        
         new_obj = Webhook(
             gid=str(uuid.uuid4()),
             resource_type="webhook",
@@ -172,7 +177,7 @@ async def create_webhook(
 @router.put("/webhooks/{webhook_gid}", response_model=dict)
 async def update_webhook(
     webhook_gid: str,
-    webhook_data: WebhookUpdate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -181,12 +186,16 @@ async def update_webhook(
     Update a webhook.
     
     Updates the fields of a webhook. Only the fields provided in the request will be updated.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
         obj = db.query(Webhook).filter(Webhook.gid == webhook_gid).first()
         
         if not obj:
             raise NotFoundError("Webhook", webhook_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        webhook_data = parse_request_body(request_body, WebhookUpdate)
         
         update_dict = webhook_data.model_dump(exclude_unset=True)
         for field, value in update_dict.items():

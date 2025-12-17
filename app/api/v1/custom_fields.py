@@ -1,7 +1,7 @@
 """CustomFields API Endpoints"""
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Body
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Dict, Any
 import uuid
 from app.database import get_db
 from app.models.custom_field import CustomField
@@ -9,6 +9,7 @@ from app.schemas.custom_field import CustomFieldResponse, CustomFieldCreate, Cus
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
 from app.utils.errors import NotFoundError
+from app.utils.request_parsing import parse_request_body
 from app.config import settings
 
 router = APIRouter()
@@ -164,7 +165,7 @@ async def get_custom_field(
 
 @router.post("/custom_fields", response_model=dict)
 async def create_custom_field(
-    custom_field_data: CustomFieldCreate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -173,8 +174,12 @@ async def create_custom_field(
     Create a custom_field.
     
     Creates a new custom_field.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        custom_field_data = parse_request_body(request_body, CustomFieldCreate)
+        
         new_obj = CustomField(
             gid=str(uuid.uuid4()),
             resource_type="custom_field",
@@ -235,7 +240,7 @@ async def create_custom_field(
 @router.put("/custom_fields/{custom_field_gid}", response_model=dict)
 async def update_custom_field(
     custom_field_gid: str,
-    custom_field_data: CustomFieldUpdate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -244,12 +249,16 @@ async def update_custom_field(
     Update a custom_field.
     
     Updates the fields of a custom_field. Only the fields provided in the request will be updated.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
         obj = db.query(CustomField).filter(CustomField.gid == custom_field_gid).first()
         
         if not obj:
             raise NotFoundError("CustomField", custom_field_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        custom_field_data = parse_request_body(request_body, CustomFieldUpdate)
         
         update_dict = custom_field_data.model_dump(exclude_unset=True)
         for field, value in update_dict.items():

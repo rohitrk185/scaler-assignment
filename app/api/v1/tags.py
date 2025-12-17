@@ -1,7 +1,7 @@
 """Tags API Endpoints"""
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Body
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Dict, Any
 import uuid
 from app.database import get_db
 from app.models.tag import Tag
@@ -9,6 +9,7 @@ from app.schemas.tag import TagResponse, TagCreate, TagUpdate
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
 from app.utils.errors import NotFoundError
+from app.utils.request_parsing import parse_request_body
 from app.config import settings
 
 router = APIRouter()
@@ -116,7 +117,7 @@ async def get_tag(
 
 @router.post("/tags", response_model=dict)
 async def create_tag(
-    tag_data: TagCreate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -125,8 +126,12 @@ async def create_tag(
     Create a tag.
     
     Creates a new tag.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        tag_data = parse_request_body(request_body, TagCreate)
+        
         new_obj = Tag(
             gid=str(uuid.uuid4()),
             resource_type="tag",
@@ -163,7 +168,7 @@ async def create_tag(
 @router.put("/tags/{tag_gid}", response_model=dict)
 async def update_tag(
     tag_gid: str,
-    tag_data: TagUpdate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -172,12 +177,16 @@ async def update_tag(
     Update a tag.
     
     Updates the fields of a tag. Only the fields provided in the request will be updated.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
         obj = db.query(Tag).filter(Tag.gid == tag_gid).first()
         
         if not obj:
             raise NotFoundError("Tag", tag_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        tag_data = parse_request_body(request_body, TagUpdate)
         
         update_dict = tag_data.model_dump(exclude_unset=True)
         for field, value in update_dict.items():

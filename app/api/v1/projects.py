@@ -1,7 +1,7 @@
 """Projects API Endpoints"""
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Body
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Dict, Any
 import uuid
 from app.database import get_db
 from app.models.project import Project
@@ -9,6 +9,7 @@ from app.schemas.project import ProjectResponse, ProjectCreate, ProjectUpdate
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
 from app.utils.errors import NotFoundError
+from app.utils.request_parsing import parse_request_body
 from app.config import settings
 
 router = APIRouter()
@@ -166,7 +167,7 @@ async def get_project(
 
 @router.post("/projects", response_model=dict)
 async def create_project(
-    project_data: ProjectCreate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -175,8 +176,12 @@ async def create_project(
     Create a project.
     
     Creates a new project.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        project_data = parse_request_body(request_body, ProjectCreate)
+        
         new_obj = Project(
             gid=str(uuid.uuid4()),
             resource_type="project",
@@ -238,7 +243,7 @@ async def create_project(
 @router.put("/projects/{project_gid}", response_model=dict)
 async def update_project(
     project_gid: str,
-    project_data: ProjectUpdate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -247,12 +252,16 @@ async def update_project(
     Update a project.
     
     Updates the fields of a project. Only the fields provided in the request will be updated.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
         obj = db.query(Project).filter(Project.gid == project_gid).first()
         
         if not obj:
             raise NotFoundError("Project", project_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        project_data = parse_request_body(request_body, ProjectUpdate)
         
         update_dict = project_data.model_dump(exclude_unset=True)
         for field, value in update_dict.items():

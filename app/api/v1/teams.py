@@ -1,7 +1,7 @@
 """Teams API Endpoints"""
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Body
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Dict, Any
 import uuid
 from app.database import get_db
 from app.models.team import Team
@@ -9,6 +9,7 @@ from app.schemas.team import TeamResponse, TeamCreate, TeamUpdate
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
 from app.utils.errors import NotFoundError
+from app.utils.request_parsing import parse_request_body
 from app.config import settings
 
 router = APIRouter()
@@ -134,7 +135,7 @@ async def get_team(
 
 @router.post("/teams", response_model=dict)
 async def create_team(
-    team_data: TeamCreate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -143,8 +144,12 @@ async def create_team(
     Create a team.
     
     Creates a new team.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        team_data = parse_request_body(request_body, TeamCreate)
+        
         new_obj = Team(
             gid=str(uuid.uuid4()),
             resource_type="team",
@@ -192,7 +197,7 @@ async def create_team(
 @router.put("/teams/{team_gid}", response_model=dict)
 async def update_team(
     team_gid: str,
-    team_data: TeamUpdate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -201,12 +206,16 @@ async def update_team(
     Update a team.
     
     Updates the fields of a team. Only the fields provided in the request will be updated.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
         obj = db.query(Team).filter(Team.gid == team_gid).first()
         
         if not obj:
             raise NotFoundError("Team", team_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        team_data = parse_request_body(request_body, TeamUpdate)
         
         update_dict = team_data.model_dump(exclude_unset=True)
         for field, value in update_dict.items():

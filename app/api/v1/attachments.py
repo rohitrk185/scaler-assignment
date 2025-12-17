@@ -1,7 +1,7 @@
 """Attachments API Endpoints"""
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Body
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Dict, Any
 import uuid
 from app.database import get_db
 from app.models.attachment import Attachment
@@ -9,6 +9,7 @@ from app.schemas.attachment import AttachmentResponse, AttachmentCreate, Attachm
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
 from app.utils.errors import NotFoundError
+from app.utils.request_parsing import parse_request_body
 from app.config import settings
 
 router = APIRouter()
@@ -121,7 +122,7 @@ async def get_attachment(
 
 @router.post("/attachments", response_model=dict)
 async def create_attachment(
-    attachment_data: AttachmentCreate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -130,8 +131,12 @@ async def create_attachment(
     Create a attachment.
     
     Creates a new attachment.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        attachment_data = parse_request_body(request_body, AttachmentCreate)
+        
         new_obj = Attachment(
             gid=str(uuid.uuid4()),
             resource_type="attachment",
@@ -171,7 +176,7 @@ async def create_attachment(
 @router.put("/attachments/{attachment_gid}", response_model=dict)
 async def update_attachment(
     attachment_gid: str,
-    attachment_data: AttachmentUpdate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -180,12 +185,16 @@ async def update_attachment(
     Update a attachment.
     
     Updates the fields of a attachment. Only the fields provided in the request will be updated.
+    Request body must follow OpenAPI spec format: {"data": {...}}
     """
     try:
         obj = db.query(Attachment).filter(Attachment.gid == attachment_gid).first()
         
         if not obj:
             raise NotFoundError("Attachment", attachment_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        attachment_data = parse_request_body(request_body, AttachmentUpdate)
         
         update_dict = attachment_data.model_dump(exclude_unset=True)
         for field, value in update_dict.items():

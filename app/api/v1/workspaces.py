@@ -1,13 +1,14 @@
 """Workspaces API Endpoints"""
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException, Body
 from sqlalchemy.orm import Session
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from app.database import get_db
 from app.models.workspace import Workspace
-from app.schemas.workspace import WorkspaceResponse, WorkspaceCreate, WorkspaceUpdate
+from app.schemas.workspace import WorkspaceResponse, WorkspaceUpdate
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
 from app.utils.errors import NotFoundError
+from app.utils.request_parsing import parse_request_body
 from app.config import settings
 
 router = APIRouter()
@@ -110,7 +111,7 @@ async def get_workspace(
 @router.put("/workspaces/{workspace_gid}", response_model=dict)
 async def update_workspace(
     workspace_gid: str,
-    workspace_data: WorkspaceUpdate,
+    request_body: Dict[str, Any] = Body(...),
     opt_fields: Optional[str] = Query(None),
     opt_pretty: Optional[bool] = Query(False),
     db: Session = Depends(get_db)
@@ -119,12 +120,16 @@ async def update_workspace(
     Update a workspace.
     
     Updates the fields of a workspace. Only the fields provided in the request will be updated.
+    Request body must follow OpenAPI spec format: {"data": {"name": "..."}}
     """
     try:
         workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
         
         if not workspace:
             raise NotFoundError("Workspace", workspace_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        workspace_data = parse_request_body(request_body, WorkspaceUpdate)
         
         # Update fields
         update_dict = workspace_data.model_dump(exclude_unset=True)
