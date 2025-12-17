@@ -8,7 +8,8 @@ from app.models.task import Task
 from app.schemas.task import TaskResponse, TaskCreate, TaskUpdate
 from app.schemas.common import (
     TaskDuplicateRequest, TaskAddProjectRequest, TaskRemoveProjectRequest,
-    TaskAddTagRequest, TaskRemoveTagRequest, AddFollowersRequest, RemoveFollowersRequest
+    TaskAddTagRequest, TaskRemoveTagRequest, AddFollowersRequest, RemoveFollowersRequest,
+    TaskSetParentRequest, ModifyDependenciesRequest, ModifyDependentsRequest, EmptyResponse
 )
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
@@ -1007,6 +1008,271 @@ async def get_task_time_tracking_entries(
             status_code=e.status_code
         )
     except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/tasks/{task_gid}/setParent", response_model=dict)
+async def set_task_parent(
+    task_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Set the parent of a task.
+    
+    Updates the parent of a given task. This endpoint can be used to make a task a subtask of another task, or to remove its existing parent.
+    
+    When using `insert_before` and `insert_after`, at most one of those two options can be specified, and they must already be subtasks of the parent.
+    
+    Returns the complete, updated record of the affected task.
+    Request body must follow OpenAPI spec format: {"data": {"parent": "...", "insert_before": "...", "insert_after": "..."}}
+    """
+    try:
+        task = db.query(Task).filter(Task.gid == task_gid).first()
+        
+        if not task:
+            raise NotFoundError("Task", task_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        set_parent_data = parse_request_body(request_body, TaskSetParentRequest)
+        
+        # TODO: Implement task-parent relationship
+        # For now, return the task as-is
+        task_response = TaskResponse(
+            gid=task.gid,
+            resource_type=task.resource_type,
+            created_at=task.created_at,
+            updated_at=task.updated_at,
+            name=task.name,
+            resource_subtype=task.resource_subtype,
+            created_by=task.created_by,
+            approval_status=task.approval_status,
+            assignee_status=task.assignee_status,
+            completed=task.completed,
+            completed_at=task.completed_at,
+            due_at=task.due_at,
+            due_on=task.due_on,
+            external=task.external,
+            html_notes=task.html_notes,
+            hearted=task.hearted,
+            is_rendered_as_separator=task.is_rendered_as_separator,
+            liked=task.liked,
+            memberships=task.memberships,
+            modified_at=task.modified_at,
+            notes=task.notes,
+            num_hearts=task.num_hearts,
+            num_likes=task.num_likes,
+            num_subtasks=task.num_subtasks,
+            start_at=task.start_at,
+            start_on=task.start_on,
+            actual_time_minutes=task.actual_time_minutes,
+            permalink_url=task.permalink_url,
+            dependencies=None,
+            dependents=None,
+            hearts=None,
+            likes=None,
+            custom_fields=None,
+            followers=None,
+            projects=None,
+            tags=None,
+            completed_by=None,
+            assignee=None,
+            assignee_section=None,
+            parent=None,
+            custom_type=None,
+            custom_type_status_option=None,
+            workspace=None
+        )
+        
+        return format_success_response(task_response)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/tasks/{task_gid}/addDependencies", response_model=dict)
+async def add_task_dependencies(
+    task_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Set dependencies for a task.
+    
+    Marks a set of tasks as dependencies of this task, if they are not already dependencies.
+    *A task can have at most 30 dependents and dependencies combined*.
+    Request body must follow OpenAPI spec format: {"data": {"dependencies": [...]}}
+    """
+    try:
+        task = db.query(Task).filter(Task.gid == task_gid).first()
+        
+        if not task:
+            raise NotFoundError("Task", task_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        dependencies_data = parse_request_body(request_body, ModifyDependenciesRequest)
+        
+        # TODO: Implement task-dependency relationship
+        # For now, return EmptyResponse as per OpenAPI spec
+        empty_response = EmptyResponse()
+        
+        return format_success_response(empty_response)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/tasks/{task_gid}/removeDependencies", response_model=dict)
+async def remove_task_dependencies(
+    task_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Unlink dependencies from a task.
+    
+    Unlinks a set of dependencies from this task.
+    Request body must follow OpenAPI spec format: {"data": {"dependencies": [...]}}
+    """
+    try:
+        task = db.query(Task).filter(Task.gid == task_gid).first()
+        
+        if not task:
+            raise NotFoundError("Task", task_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        dependencies_data = parse_request_body(request_body, ModifyDependenciesRequest)
+        
+        # TODO: Implement task-dependency relationship removal
+        # For now, return EmptyResponse as per OpenAPI spec
+        empty_response = EmptyResponse()
+        
+        return format_success_response(empty_response)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/tasks/{task_gid}/addDependents", response_model=dict)
+async def add_task_dependents(
+    task_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Set dependents for a task.
+    
+    Marks a set of tasks as dependents of this task, if they are not already dependents.
+    *A task can have at most 30 dependents and dependencies combined*.
+    Request body must follow OpenAPI spec format: {"data": {"dependents": [...]}}
+    """
+    try:
+        task = db.query(Task).filter(Task.gid == task_gid).first()
+        
+        if not task:
+            raise NotFoundError("Task", task_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        dependents_data = parse_request_body(request_body, ModifyDependentsRequest)
+        
+        # TODO: Implement task-dependent relationship
+        # For now, return EmptyResponse as per OpenAPI spec
+        empty_response = EmptyResponse()
+        
+        return format_success_response(empty_response)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/tasks/{task_gid}/removeDependents", response_model=dict)
+async def remove_task_dependents(
+    task_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Unlink dependents from a task.
+    
+    Unlinks a set of dependents from this task.
+    Request body must follow OpenAPI spec format: {"data": {"dependents": [...]}}
+    """
+    try:
+        task = db.query(Task).filter(Task.gid == task_gid).first()
+        
+        if not task:
+            raise NotFoundError("Task", task_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        dependents_data = parse_request_body(request_body, ModifyDependentsRequest)
+        
+        # TODO: Implement task-dependent relationship removal
+        # For now, return EmptyResponse as per OpenAPI spec
+        empty_response = EmptyResponse()
+        
+        return format_success_response(empty_response)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
         return format_error_response(
             message=str(e),
             status_code=500

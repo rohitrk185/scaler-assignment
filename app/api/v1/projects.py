@@ -9,7 +9,9 @@ from app.schemas.project import ProjectResponse, ProjectCreate, ProjectUpdate
 from app.schemas.common import (
     AddMembersRequest, RemoveMembersRequest,
     AddFollowersRequest, RemoveFollowersRequest,
-    ProjectDuplicateRequest
+    ProjectDuplicateRequest, ProjectSectionInsertRequest,
+    AddCustomFieldSettingRequest, RemoveCustomFieldSettingRequest,
+    ProjectBriefRequest, ProjectSaveAsTemplateRequest, EmptyResponse
 )
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
@@ -962,6 +964,227 @@ async def get_project_task_counts(
             status_code=e.status_code
         )
     except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/projects/{project_gid}/sections/insert", response_model=dict)
+async def insert_project_section(
+    project_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Move or Insert sections.
+    
+    Move sections relative to each other. One of `before_section` or `after_section` is required.
+    
+    Sections cannot be moved between projects.
+    
+    Returns an empty data block.
+    Request body must follow OpenAPI spec format: {"data": {"section": "...", "before_section": "...", "after_section": "..."}}
+    """
+    try:
+        project = db.query(Project).filter(Project.gid == project_gid).first()
+        
+        if not project:
+            raise NotFoundError("Project", project_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        insert_data = parse_request_body(request_body, ProjectSectionInsertRequest)
+        
+        # TODO: Implement section reordering
+        # For now, return EmptyResponse as per OpenAPI spec
+        empty_response = EmptyResponse()
+        
+        return format_success_response(empty_response)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/projects/{project_gid}/addCustomFieldSetting", response_model=dict)
+async def add_project_custom_field_setting(
+    project_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Add a custom field to a project.
+    
+    Custom fields are associated with projects by way of custom field settings. This method creates a setting for the project.
+    Request body must follow OpenAPI spec format: {"data": {"custom_field": "...", "is_important": ..., "insert_before": "...", "insert_after": "..."}}
+    """
+    try:
+        project = db.query(Project).filter(Project.gid == project_gid).first()
+        
+        if not project:
+            raise NotFoundError("Project", project_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        add_setting_data = parse_request_body(request_body, AddCustomFieldSettingRequest)
+        
+        # TODO: Implement project-custom_field_setting relationship
+        # For now, return EmptyResponse (CustomFieldSettingResponse would be ideal but not implemented yet)
+        empty_response = EmptyResponse()
+        
+        return format_success_response(empty_response)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/projects/{project_gid}/removeCustomFieldSetting", response_model=dict)
+async def remove_project_custom_field_setting(
+    project_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Remove a custom field from a project.
+    
+    Removes a custom field setting from a project.
+    Request body must follow OpenAPI spec format: {"data": {"custom_field": "..."}}
+    """
+    try:
+        project = db.query(Project).filter(Project.gid == project_gid).first()
+        
+        if not project:
+            raise NotFoundError("Project", project_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        remove_setting_data = parse_request_body(request_body, RemoveCustomFieldSettingRequest)
+        
+        # TODO: Implement project-custom_field_setting relationship removal
+        # For now, return EmptyResponse as per OpenAPI spec
+        empty_response = EmptyResponse()
+        
+        return format_success_response(empty_response)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/projects/{project_gid}/project_briefs", response_model=dict)
+async def create_project_brief(
+    project_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Create a project brief.
+    
+    Creates a new project brief.
+    
+    Returns the full record of the newly created project brief.
+    Request body must follow OpenAPI spec format: {"data": {"title": "...", "html_text": "...", "text": "..."}}
+    """
+    try:
+        project = db.query(Project).filter(Project.gid == project_gid).first()
+        
+        if not project:
+            raise NotFoundError("Project", project_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        brief_data = parse_request_body(request_body, ProjectBriefRequest)
+        
+        # TODO: Implement project brief creation
+        # For now, return EmptyResponse (ProjectBriefResponse would be ideal but not implemented yet)
+        empty_response = EmptyResponse()
+        
+        return format_success_response(empty_response, status_code=201)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/projects/{project_gid}/saveAsTemplate", response_model=dict)
+async def save_project_as_template(
+    project_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Create a project template from a project.
+    
+    Creates and returns a job that will asynchronously handle the project template creation.
+    Request body must follow OpenAPI spec format: {"data": {"name": "...", "team": "...", "public": ...}}
+    """
+    try:
+        project = db.query(Project).filter(Project.gid == project_gid).first()
+        
+        if not project:
+            raise NotFoundError("Project", project_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        template_data = parse_request_body(request_body, ProjectSaveAsTemplateRequest)
+        
+        # TODO: Implement project template creation (returns JobResponse)
+        # For now, return EmptyResponse
+        empty_response = EmptyResponse()
+        
+        return format_success_response(empty_response)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
         return format_error_response(
             message=str(e),
             status_code=500

@@ -159,3 +159,78 @@ class EnumOptionInsertRequest(BaseModel):
     class Config:
         from_attributes = True
 
+
+class TaskSetParentRequest(BaseModel):
+    """Request schema for setting parent task"""
+    parent: Optional[str] = Field(..., description="The new parent of the task, or `null` for no parent.", example='987654')
+    insert_after: Optional[str] = Field(None, description="A subtask of the parent to insert the task after, or `null` to insert at the beginning of the list.", example='null')
+    insert_before: Optional[str] = Field(None, description="A subtask of the parent to insert the task before, or `null` to insert at the end of the list.", example='124816')
+
+    class Config:
+        from_attributes = True
+
+
+class ModifyDependenciesRequest(BaseModel):
+    """Request schema for modifying task dependencies"""
+    dependencies: List[str] = Field(description="An array of task gids that a task depends on.", example=['133713', '184253'])
+
+    class Config:
+        from_attributes = True
+
+
+class ModifyDependentsRequest(BaseModel):
+    """Request schema for modifying task dependents"""
+    dependents: List[str] = Field(description="An array of task gids that are dependents of the given task.", example=['133713', '184253'])
+
+    class Config:
+        from_attributes = True
+
+
+class ProjectSectionInsertRequest(BaseModel):
+    """Request schema for inserting/reordering sections in a project"""
+    section: str = Field(description="The section to reorder.", example='321654')
+    before_section: Optional[str] = Field(None, description="Insert the given section immediately before the section specified by this parameter.", example='86420')
+    after_section: Optional[str] = Field(None, description="Insert the given section immediately after the section specified by this parameter.", example='987654')
+
+    class Config:
+        from_attributes = True
+
+
+class AddCustomFieldSettingRequest(BaseModel):
+    """Request schema for adding a custom field setting"""
+    custom_field: str = Field(description="The custom field to associate with this container.", example='14916')
+    is_important: Optional[bool] = Field(None, description="Whether this field should be considered important to this container (for instance, to display in the list view of items in the container).", example=True)
+    insert_before: Optional[str] = Field(None, description="A gid of a Custom Field Setting on this container, before which the new Custom Field Setting will be added. `insert_before` and `insert_after` parameters cannot both be specified.", example='1331')
+    insert_after: Optional[str] = Field(None, description="A gid of a Custom Field Setting on this container, after which the new Custom Field Setting will be added. `insert_before` and `insert_after` parameters cannot both be specified.", example='1331')
+
+    class Config:
+        from_attributes = True
+
+
+class RemoveCustomFieldSettingRequest(BaseModel):
+    """Request schema for removing a custom field setting"""
+    custom_field: str = Field(description="The custom field to remove from this portfolio.", example='14916')
+
+    class Config:
+        from_attributes = True
+
+
+class ProjectBriefRequest(BaseModel):
+    """Request schema for creating/updating a project brief"""
+    title: Optional[str] = Field(None, description="The title of the project brief.", example='Stuff to buy — Project Brief')
+    html_text: Optional[str] = Field(None, description="HTML formatted text for the project brief.", example='<body>This is a <strong>project brief</strong>.</body>')
+    text: Optional[str] = Field(None, description="The plain text of the project brief. When writing to a project brief, you can specify either `html_text` (preferred) or `text`, but not both.", example='This is a project brief.')
+
+    class Config:
+        from_attributes = True
+
+
+class ProjectSaveAsTemplateRequest(BaseModel):
+    """Request schema for saving a project as a template"""
+    name: Optional[str] = Field(None, description="The name of the new project template.", example='New Project Template')
+    team: Optional[str] = Field(None, description="Sets the team of the new project template.", example='12345')
+    public: Optional[bool] = Field(None, description="Sets the public access level of the new project template.", example=False)
+
+    class Config:
+        from_attributes = True
+

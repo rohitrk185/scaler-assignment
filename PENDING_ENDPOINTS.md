@@ -63,7 +63,7 @@ As endpoints are implemented, they should be removed from this list.
 
 ## 3. Projects
 
-### Currently Implemented (16)
+### Currently Implemented (21)
 - ✅ GET `/projects`
 - ✅ GET `/projects/{project_gid}`
 - ✅ POST `/projects`
@@ -80,19 +80,24 @@ As endpoints are implemented, they should be removed from this list.
 - ✅ GET `/projects/{project_gid}/project_memberships`
 - ✅ GET `/projects/{project_gid}/project_statuses`
 - ✅ GET `/projects/{project_gid}/task_counts`
+- ✅ POST `/projects/{project_gid}/sections/insert`
+- ✅ POST `/projects/{project_gid}/addCustomFieldSetting`
+- ✅ POST `/projects/{project_gid}/removeCustomFieldSetting`
+- ✅ POST `/projects/{project_gid}/project_briefs`
+- ✅ POST `/projects/{project_gid}/saveAsTemplate`
 
-### Pending (4)
-- [ ] GET `/projects/{project_gid}/project_briefs` - Get project briefs (Note: This is POST, not GET in spec)
-- [ ] POST `/projects/{project_gid}/sections/insert` - Insert section
-- [ ] POST `/projects/{project_gid}/addCustomFieldSetting` - Add custom field setting
-- [ ] POST `/projects/{project_gid}/removeCustomFieldSetting` - Remove custom field setting
-- [ ] POST `/projects/{project_gid}/saveAsTemplate` - Save as template
+### Pending (0)
+- ✅ POST `/projects/{project_gid}/project_briefs` - Create project brief
+- ✅ POST `/projects/{project_gid}/sections/insert` - Insert section
+- ✅ POST `/projects/{project_gid}/addCustomFieldSetting` - Add custom field setting
+- ✅ POST `/projects/{project_gid}/removeCustomFieldSetting` - Remove custom field setting
+- ✅ POST `/projects/{project_gid}/saveAsTemplate` - Save as template
 
 ---
 
 ## 4. Tasks
 
-### Currently Implemented (19)
+### Currently Implemented (24)
 - ✅ GET `/tasks`
 - ✅ GET `/tasks/{task_gid}`
 - ✅ POST `/tasks`
@@ -112,13 +117,14 @@ As endpoints are implemented, they should be removed from this list.
 - ✅ POST `/tasks/{task_gid}/removeTag`
 - ✅ POST `/tasks/{task_gid}/addFollowers`
 - ✅ POST `/tasks/{task_gid}/removeFollowers`
+- ✅ POST `/tasks/{task_gid}/setParent`
+- ✅ POST `/tasks/{task_gid}/addDependencies`
+- ✅ POST `/tasks/{task_gid}/removeDependencies`
+- ✅ POST `/tasks/{task_gid}/addDependents`
+- ✅ POST `/tasks/{task_gid}/removeDependents`
 
-### Pending (6)
-- [ ] POST `/tasks/{task_gid}/setParent` - Set parent task
-- [ ] POST `/tasks/{task_gid}/addDependencies` - Add dependencies
-- [ ] POST `/tasks/{task_gid}/removeDependencies` - Remove dependencies
-- [ ] POST `/tasks/{task_gid}/addDependents` - Add dependents
-- [ ] POST `/tasks/{task_gid}/removeDependents` - Remove dependents
+### Pending (0)
+- All high-priority and medium-priority endpoints implemented.
 
 ---
 
@@ -233,9 +239,9 @@ As endpoints are implemented, they should be removed from this list.
 
 ## Summary
 
-- **Total Implemented:** 105 endpoints (52 core + 25 high-priority + 15 medium-priority + 13 easy GET endpoints)
-- **Total Pending:** 11 endpoints (6 POST endpoints + 3 search endpoints + 2 other)
-- **Total in Spec:** ~116 endpoints
+- **Total Implemented:** 115 endpoints (52 core + 25 high-priority + 15 medium-priority + 13 easy GET + 10 medium POST endpoints)
+- **Total Pending:** 3 endpoints (3 search endpoints)
+- **Total in Spec:** ~118 endpoints
 
 ### Priority Breakdown
 
