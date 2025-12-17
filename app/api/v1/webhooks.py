@@ -138,10 +138,14 @@ async def create_webhook(
         # Parse request body following OpenAPI spec format: {"data": {...}}
         webhook_data = parse_request_body(request_body, WebhookCreate)
         
+        # Extract resource from data (it's not a direct field on Webhook model yet)
+        webhook_dict = webhook_data.model_dump(exclude_unset=True)
+        resource_gid = webhook_dict.pop("resource", None)  # Remove resource, store for future use
+        
         new_obj = Webhook(
             gid=str(uuid.uuid4()),
             resource_type="webhook",
-            **webhook_data.model_dump(exclude_unset=True)
+            **webhook_dict
         )
         
         db.add(new_obj)

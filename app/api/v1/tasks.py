@@ -942,6 +942,120 @@ async def get_task_stories(
         )
 
 
+@router.post("/tasks/{task_gid}/stories", response_model=dict)
+async def create_task_story(
+    task_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Create a story on a task.
+    
+    Creates a new story on the task.
+    Request body must follow OpenAPI spec format: {"data": {...}}
+    """
+    try:
+        task = db.query(Task).filter(Task.gid == task_gid).first()
+        
+        if not task:
+            raise NotFoundError("Task", task_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        from app.schemas.story import StoryCreate
+        from app.models.story import Story
+        story_data = parse_request_body(request_body, StoryCreate)
+        
+        # Extract task from data (it's not a direct field on Story model yet)
+        story_dict = story_data.model_dump(exclude_unset=True)
+        story_dict.pop("task", None)  # Remove task, it's implicit from URL
+        
+        new_obj = Story(
+            gid=str(uuid.uuid4()),
+            resource_type="story",
+            **story_dict
+        )
+        
+        db.add(new_obj)
+        db.commit()
+        db.refresh(new_obj)
+        
+        from app.schemas.story import StoryResponse
+        obj_response = StoryResponse(
+            gid=new_obj.gid,
+            resource_type=new_obj.resource_type,
+            created_at=new_obj.created_at,
+            updated_at=new_obj.updated_at,
+            resource_subtype=new_obj.resource_subtype,
+            text=new_obj.text,
+            html_text=new_obj.html_text,
+            is_pinned=new_obj.is_pinned,
+            sticker_name=new_obj.sticker_name,
+            type=new_obj.type,
+            is_editable=new_obj.is_editable,
+            is_edited=new_obj.is_edited,
+            hearted=new_obj.hearted,
+            num_hearts=new_obj.num_hearts,
+            liked=new_obj.liked,
+            num_likes=new_obj.num_likes,
+            old_name=new_obj.old_name,
+            new_name=new_obj.new_name,
+            old_resource_subtype=new_obj.old_resource_subtype,
+            new_resource_subtype=new_obj.new_resource_subtype,
+            old_text_value=new_obj.old_text_value,
+            new_text_value=new_obj.new_text_value,
+            old_number_value=new_obj.old_number_value,
+            new_number_value=new_obj.new_number_value,
+            new_approval_status=new_obj.new_approval_status,
+            old_approval_status=new_obj.old_approval_status,
+            source=new_obj.source,
+            created_by=None,
+            hearts=None,
+            likes=None,
+            reaction_summary=None,
+            previews=None,
+            old_dates=None,
+            new_dates=None,
+            story=None,
+            assignee=None,
+            follower=None,
+            old_section=None,
+            new_section=None,
+            task=None,
+            project=None,
+            tag=None,
+            custom_field=None,
+            old_enum_value=None,
+            new_enum_value=None,
+            old_date_value=None,
+            new_date_value=None,
+            old_people_value=None,
+            new_people_value=None,
+            old_multi_enum_values=None,
+            new_multi_enum_values=None,
+            duplicate_of=None,
+            duplicated_from=None,
+            dependency=None,
+            target=None
+        )
+        
+        return format_success_response(obj_response, status_code=201)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
 @router.get("/tasks/{task_gid}/tags", response_model=dict)
 async def get_task_tags(
     task_gid: str,

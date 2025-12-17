@@ -55,6 +55,7 @@ class WebhookCreate(BaseModel):
     """Webhook create request schema"""
 
     resource: Optional[str] = None
+    target: Optional[str] = Field(None, description="The URL to receive the HTTP POST.")
     filters: Optional[List[str]] = Field(None, description="Whitelist of filters to apply to events from this webhook. If a webhook event passes any of the filters the event will be delivered; otherwise no event will be sent to the receiving server.")
 
     class Config:

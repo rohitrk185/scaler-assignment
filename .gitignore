@@ -35,6 +35,10 @@ test_results.json
 *.test.json
 *_results.json
 *results.json
+test_results_by_entity/
+test_api_comparison_results.html
+*.test.html
+*_results.html
 .pytest_cache/
 .coverage
 htmlcov/

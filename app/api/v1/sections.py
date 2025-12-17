@@ -127,10 +127,14 @@ async def create_section(
         # Parse request body following OpenAPI spec format: {"data": {...}}
         section_data = parse_request_body(request_body, SectionCreate)
         
+        # Extract project from data (it's not a direct field on Section model yet)
+        section_dict = section_data.model_dump(exclude_unset=True)
+        project_gid = section_dict.pop("project", None)  # Remove project, store for future use
+        
         new_obj = Section(
             gid=str(uuid.uuid4()),
             resource_type="section",
-            **section_data.model_dump(exclude_unset=True)
+            **section_dict
         )
         
         db.add(new_obj)
