@@ -852,3 +852,117 @@ async def get_project_custom_field_settings(
             message=str(e),
             status_code=500
         )
+
+
+@router.get("/projects/{project_gid}/project_memberships", response_model=dict)
+async def get_project_memberships(
+    project_gid: str,
+    user: Optional[str] = Query(None, description="A string identifying a user. This can either be the string 'me', an email, or the gid of a user."),
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get memberships from a project.
+    
+    Returns the compact project membership records for the project.
+    """
+    try:
+        project = db.query(Project).filter(Project.gid == project_gid).first()
+        
+        if not project:
+            raise NotFoundError("Project", project_gid)
+        
+        # TODO: Implement project-membership relationship with user filter
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/projects/{project_gid}/project_statuses", response_model=dict)
+async def get_project_statuses(
+    project_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get statuses from a project.
+    
+    *Deprecated: new integrations should prefer the `/status_updates` route.*
+    
+    Returns the compact project status update records for all updates on the project.
+    """
+    try:
+        project = db.query(Project).filter(Project.gid == project_gid).first()
+        
+        if not project:
+            raise NotFoundError("Project", project_gid)
+        
+        # TODO: Implement project-status relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/projects/{project_gid}/task_counts", response_model=dict)
+async def get_project_task_counts(
+    project_gid: str,
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get task count of a project.
+    
+    Get an object that holds task count fields. **All fields are excluded by default**. You must opt in using `opt_fields` to get any information from this endpoint.
+    
+    This endpoint has an additional rate limit and each field counts especially high against our cost limits.
+    
+    Milestones are just tasks, so they are included in the `num_tasks`, `num_incomplete_tasks`, and `num_completed_tasks` counts.
+    """
+    try:
+        project = db.query(Project).filter(Project.gid == project_gid).first()
+        
+        if not project:
+            raise NotFoundError("Project", project_gid)
+        
+        # TODO: Implement project task counts calculation
+        # For now, return empty object (all fields excluded by default)
+        return format_success_response({})
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )

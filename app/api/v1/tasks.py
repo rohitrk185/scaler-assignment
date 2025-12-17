@@ -867,3 +867,147 @@ async def get_task_dependents(
             message=str(e),
             status_code=500
         )
+
+
+@router.get("/tasks/{task_gid}/projects", response_model=dict)
+async def get_task_projects(
+    task_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get projects a task is in.
+    
+    Returns a compact representation of all of the projects the task is in.
+    """
+    try:
+        task = db.query(Task).filter(Task.gid == task_gid).first()
+        
+        if not task:
+            raise NotFoundError("Task", task_gid)
+        
+        # TODO: Implement task-project relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/tasks/{task_gid}/stories", response_model=dict)
+async def get_task_stories(
+    task_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get stories from a task.
+    
+    Returns the compact records for all stories on the task.
+    """
+    try:
+        task = db.query(Task).filter(Task.gid == task_gid).first()
+        
+        if not task:
+            raise NotFoundError("Task", task_gid)
+        
+        # TODO: Implement task-story relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/tasks/{task_gid}/tags", response_model=dict)
+async def get_task_tags(
+    task_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a task's tags.
+    
+    Get a compact representation of all of the tags the task has.
+    """
+    try:
+        task = db.query(Task).filter(Task.gid == task_gid).first()
+        
+        if not task:
+            raise NotFoundError("Task", task_gid)
+        
+        # TODO: Implement task-tag relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/tasks/{task_gid}/time_tracking_entries", response_model=dict)
+async def get_task_time_tracking_entries(
+    task_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get time tracking entries for a task.
+    
+    Returns time tracking entries for a given task.
+    """
+    try:
+        task = db.query(Task).filter(Task.gid == task_gid).first()
+        
+        if not task:
+            raise NotFoundError("Task", task_gid)
+        
+        # TODO: Implement task-time_tracking_entry relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )

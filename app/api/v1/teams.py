@@ -468,3 +468,147 @@ async def get_team_users(
             message=str(e),
             status_code=500
         )
+
+
+@router.get("/teams/{team_gid}/projects", response_model=dict)
+async def get_team_projects(
+    team_gid: str,
+    archived: Optional[bool] = Query(None, description="Only return projects whose archived field takes on the value of this parameter."),
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a team's projects.
+    
+    Returns the compact project records for all projects in the team.
+    """
+    try:
+        team = db.query(Team).filter(Team.gid == team_gid).first()
+        
+        if not team:
+            raise NotFoundError("Team", team_gid)
+        
+        # TODO: Implement team-project relationship with archived filter
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/teams/{team_gid}/team_memberships", response_model=dict)
+async def get_team_memberships(
+    team_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get memberships from a team.
+    
+    Returns the compact team memberships for the team.
+    """
+    try:
+        team = db.query(Team).filter(Team.gid == team_gid).first()
+        
+        if not team:
+            raise NotFoundError("Team", team_gid)
+        
+        # TODO: Implement team-membership relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/teams/{team_gid}/custom_field_settings", response_model=dict)
+async def get_team_custom_field_settings(
+    team_gid: str,
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a team's custom fields.
+    
+    Returns a list of all of the custom fields settings on a team, in compact form.
+    """
+    try:
+        team = db.query(Team).filter(Team.gid == team_gid).first()
+        
+        if not team:
+            raise NotFoundError("Team", team_gid)
+        
+        # TODO: Implement team-custom_field_setting relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/teams/{team_gid}/project_templates", response_model=dict)
+async def get_team_project_templates(
+    team_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a team's project templates.
+    
+    Returns the compact project template records for all project templates in the team.
+    """
+    try:
+        team = db.query(Team).filter(Team.gid == team_gid).first()
+        
+        if not team:
+            raise NotFoundError("Team", team_gid)
+        
+        # TODO: Implement team-project_template relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )

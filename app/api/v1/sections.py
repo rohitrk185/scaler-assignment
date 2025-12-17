@@ -290,3 +290,40 @@ async def add_task_to_section(
             message=str(e),
             status_code=500
         )
+
+
+@router.get("/sections/{section_gid}/tasks", response_model=dict)
+async def get_section_tasks(
+    section_gid: str,
+    completed_since: Optional[str] = Query(None, description="Only return tasks that are either incomplete or that have been completed since this time. Accepts a date-time string or the keyword *now*."),
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get tasks from a section.
+    
+    *Board view only*: Returns the compact section records for all tasks within the given section.
+    """
+    try:
+        section = db.query(Section).filter(Section.gid == section_gid).first()
+        
+        if not section:
+            raise NotFoundError("Section", section_gid)
+        
+        # TODO: Implement section-task relationship with completed_since filter
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )

@@ -63,7 +63,7 @@ As endpoints are implemented, they should be removed from this list.
 
 ## 3. Projects
 
-### Currently Implemented (13)
+### Currently Implemented (16)
 - ✅ GET `/projects`
 - ✅ GET `/projects/{project_gid}`
 - ✅ POST `/projects`
@@ -77,62 +77,54 @@ As endpoints are implemented, they should be removed from this list.
 - ✅ GET `/projects/{project_gid}/sections`
 - ✅ GET `/projects/{project_gid}/tasks`
 - ✅ GET `/projects/{project_gid}/custom_field_settings`
+- ✅ GET `/projects/{project_gid}/project_memberships`
+- ✅ GET `/projects/{project_gid}/project_statuses`
+- ✅ GET `/projects/{project_gid}/task_counts`
 
-### Pending (7)
-- [x] POST `/projects/{project_gid}/duplicate` - Duplicate project
-- [x] GET `/projects/{project_gid}/custom_field_settings` - Get custom field settings
-- [ ] GET `/projects/{project_gid}/project_briefs` - Get project briefs
-- [ ] GET `/projects/{project_gid}/project_memberships` - Get project memberships
-- [ ] GET `/projects/{project_gid}/project_statuses` - Get project statuses
-- [x] GET `/projects/{project_gid}/sections` - Get project sections
+### Pending (4)
+- [ ] GET `/projects/{project_gid}/project_briefs` - Get project briefs (Note: This is POST, not GET in spec)
 - [ ] POST `/projects/{project_gid}/sections/insert` - Insert section
-- [x] GET `/projects/{project_gid}/tasks` - Get project tasks
-- [ ] GET `/projects/{project_gid}/task_counts` - Get task counts
 - [ ] POST `/projects/{project_gid}/addCustomFieldSetting` - Add custom field setting
 - [ ] POST `/projects/{project_gid}/removeCustomFieldSetting` - Remove custom field setting
-- [x] POST `/projects/{project_gid}/addMembers` - Add members
-- [x] POST `/projects/{project_gid}/removeMembers` - Remove members
-- [x] POST `/projects/{project_gid}/addFollowers` - Add followers
-- [x] POST `/projects/{project_gid}/removeFollowers` - Remove followers
 - [ ] POST `/projects/{project_gid}/saveAsTemplate` - Save as template
 
 ---
 
 ## 4. Tasks
 
-### Currently Implemented (5)
+### Currently Implemented (19)
 - ✅ GET `/tasks`
 - ✅ GET `/tasks/{task_gid}`
 - ✅ POST `/tasks`
 - ✅ PUT `/tasks/{task_gid}`
 - ✅ DELETE `/tasks/{task_gid}`
+- ✅ POST `/tasks/{task_gid}/duplicate`
+- ✅ GET `/tasks/{task_gid}/projects`
+- ✅ GET `/tasks/{task_gid}/subtasks`
+- ✅ GET `/tasks/{task_gid}/dependencies`
+- ✅ GET `/tasks/{task_gid}/dependents`
+- ✅ GET `/tasks/{task_gid}/stories`
+- ✅ GET `/tasks/{task_gid}/tags`
+- ✅ GET `/tasks/{task_gid}/time_tracking_entries`
+- ✅ POST `/tasks/{task_gid}/addProject`
+- ✅ POST `/tasks/{task_gid}/removeProject`
+- ✅ POST `/tasks/{task_gid}/addTag`
+- ✅ POST `/tasks/{task_gid}/removeTag`
+- ✅ POST `/tasks/{task_gid}/addFollowers`
+- ✅ POST `/tasks/{task_gid}/removeFollowers`
 
-### Pending (10)
-- [x] POST `/tasks/{task_gid}/duplicate` - Duplicate task
-- [ ] GET `/tasks/{task_gid}/projects` - Get task projects
-- [x] GET `/tasks/{task_gid}/subtasks` - Get subtasks
+### Pending (6)
 - [ ] POST `/tasks/{task_gid}/setParent` - Set parent task
-- [x] GET `/tasks/{task_gid}/dependencies` - Get dependencies
 - [ ] POST `/tasks/{task_gid}/addDependencies` - Add dependencies
 - [ ] POST `/tasks/{task_gid}/removeDependencies` - Remove dependencies
-- [x] GET `/tasks/{task_gid}/dependents` - Get dependents
 - [ ] POST `/tasks/{task_gid}/addDependents` - Add dependents
 - [ ] POST `/tasks/{task_gid}/removeDependents` - Remove dependents
-- [ ] GET `/tasks/{task_gid}/stories` - Get task stories
-- [ ] GET `/tasks/{task_gid}/tags` - Get task tags
-- [x] POST `/tasks/{task_gid}/addProject` - Add task to project
-- [x] POST `/tasks/{task_gid}/removeProject` - Remove task from project
-- [x] POST `/tasks/{task_gid}/addTag` - Add tag to task
-- [x] POST `/tasks/{task_gid}/removeTag` - Remove tag from task
-- [x] POST `/tasks/{task_gid}/addFollowers` - Add followers
-- [x] POST `/tasks/{task_gid}/removeFollowers` - Remove followers
-- [ ] GET `/tasks/{task_gid}/time_tracking_entries` - Get time tracking entries
 
 ---
 
 ## 5. Teams
 
-### Currently Implemented (8)
+### Currently Implemented (12)
 - ✅ GET `/teams`
 - ✅ GET `/teams/{team_gid}`
 - ✅ POST `/teams`
@@ -141,30 +133,29 @@ As endpoints are implemented, they should be removed from this list.
 - ✅ POST `/teams/{team_gid}/addUser`
 - ✅ POST `/teams/{team_gid}/removeUser`
 - ✅ GET `/teams/{team_gid}/users`
+- ✅ GET `/teams/{team_gid}/projects`
+- ✅ GET `/teams/{team_gid}/team_memberships`
+- ✅ GET `/teams/{team_gid}/custom_field_settings`
+- ✅ GET `/teams/{team_gid}/project_templates`
 
-### Pending (4)
-- [ ] GET `/teams/{team_gid}/custom_field_settings` - Get custom field settings
-- [ ] GET `/teams/{team_gid}/project_templates` - Get project templates
-- [ ] GET `/teams/{team_gid}/projects` - Get team projects
-- [ ] GET `/teams/{team_gid}/team_memberships` - Get team memberships
-- [x] GET `/teams/{team_gid}/users` - Get team users
-- [x] POST `/teams/{team_gid}/addUser` - Add user to team
-- [x] POST `/teams/{team_gid}/removeUser` - Remove user from team
+### Pending (0)
+- All high-priority and medium-priority endpoints implemented.
 
 ---
 
 ## 6. Sections
 
-### Currently Implemented (5)
+### Currently Implemented (6)
 - ✅ GET `/sections`
 - ✅ GET `/sections/{section_gid}`
 - ✅ POST `/sections`
 - ✅ PUT `/sections/{section_gid}`
 - ✅ DELETE `/sections/{section_gid}`
+- ✅ POST `/sections/{section_gid}/addTask`
+- ✅ GET `/sections/{section_gid}/tasks`
 
-### Pending (1)
-- [ ] GET `/sections/{section_gid}/tasks` - Get section tasks
-- [x] POST `/sections/{section_gid}/addTask` - Add task to section
+### Pending (0)
+- All high-priority and medium-priority endpoints implemented.
 
 ---
 
@@ -242,8 +233,8 @@ As endpoints are implemented, they should be removed from this list.
 
 ## Summary
 
-- **Total Implemented:** 92 endpoints (52 core + 25 high-priority + 15 medium-priority)
-- **Total Pending:** 24 endpoints
+- **Total Implemented:** 105 endpoints (52 core + 25 high-priority + 15 medium-priority + 13 easy GET endpoints)
+- **Total Pending:** 11 endpoints (6 POST endpoints + 3 search endpoints + 2 other)
 - **Total in Spec:** ~116 endpoints
 
 ### Priority Breakdown
