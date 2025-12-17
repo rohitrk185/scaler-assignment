@@ -258,3 +258,39 @@ async def delete_tag(
             message=str(e),
             status_code=500
         )
+
+
+@router.get("/tags/{tag_gid}/tasks", response_model=dict)
+async def get_tag_tasks(
+    tag_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get tasks from a tag.
+    
+    Returns the compact task records for all tasks with the given tag.
+    """
+    try:
+        tag = db.query(Tag).filter(Tag.gid == tag_gid).first()
+        
+        if not tag:
+            raise NotFoundError("Tag", tag_gid)
+        
+        # TODO: Implement tag-task relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )

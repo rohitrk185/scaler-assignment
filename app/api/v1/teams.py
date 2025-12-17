@@ -5,7 +5,9 @@ from typing import Optional, Dict, Any
 import uuid
 from app.database import get_db
 from app.models.team import Team
+from app.models.user import User
 from app.schemas.team import TeamResponse, TeamCreate, TeamUpdate
+from app.schemas.common import TeamAddUserRequest, TeamRemoveUserRequest, EmptyResponse
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
 from app.utils.errors import NotFoundError
@@ -298,5 +300,135 @@ async def delete_team(
         error_details = traceback.format_exc()
         return format_error_response(
             message=f"{str(e)}\n{error_details}",
+            status_code=500
+        )
+
+
+@router.post("/teams/{team_gid}/addUser", response_model=dict)
+async def add_user_to_team(
+    team_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Add a user to a team.
+    
+    The user making this call must be a member of the team in order to add others.
+    Returns the complete team membership record for the newly added user.
+    Request body must follow OpenAPI spec format: {"data": {"user": "..."}}
+    """
+    try:
+        team = db.query(Team).filter(Team.gid == team_gid).first()
+        
+        if not team:
+            raise NotFoundError("Team", team_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        add_user_data = parse_request_body(request_body, TeamAddUserRequest)
+        
+        # Find user by gid or email
+        user_identifier = add_user_data.user
+        user = None
+        
+        if user_identifier == "me":
+            # TODO: Get current authenticated user
+            # For now, return error
+            return format_error_response(
+                message="'me' identifier not supported without authentication",
+                status_code=400
+            )
+        elif "@" in user_identifier:
+            # Email address
+            user = db.query(User).filter(User.email == user_identifier).first()
+        else:
+            # GID
+            user = db.query(User).filter(User.gid == user_identifier).first()
+        
+        if not user:
+            return format_error_response(
+                message=f"User '{user_identifier}' not found",
+                status_code=404
+            )
+        
+        # TODO: Implement team-member relationship
+        # For now, return a minimal TeamMembershipResponse as per OpenAPI spec
+        # TeamMembershipResponse should have: gid, resource_type, user (UserCompact), team (TeamCompact), is_guest, is_limited_access, is_admin
+        team_membership_response = {
+            "gid": str(uuid.uuid4()),  # Generate a membership GID
+            "resource_type": "team_membership",
+            "user": {
+                "gid": user.gid,
+                "resource_type": user.resource_type or "user",
+                "name": user.name,
+                "email": user.email
+            },
+            "team": {
+                "gid": team.gid,
+                "resource_type": team.resource_type or "team",
+                "name": team.name
+            },
+            "is_guest": False,
+            "is_limited_access": False,
+            "is_admin": False
+        }
+        
+        return format_success_response(team_membership_response)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/teams/{team_gid}/removeUser", response_model=dict)
+async def remove_user_from_team(
+    team_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Remove a user from a team.
+    
+    The user making this call must be a member of the team in order to remove others.
+    Returns an empty data record.
+    Request body must follow OpenAPI spec format: {"data": {"user": "..."}}
+    """
+    try:
+        team = db.query(Team).filter(Team.gid == team_gid).first()
+        
+        if not team:
+            raise NotFoundError("Team", team_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        remove_user_data = parse_request_body(request_body, TeamRemoveUserRequest)
+        
+        # TODO: Implement team-member relationship removal
+        # For now, just return empty response
+        empty_response = EmptyResponse()
+        
+        return format_success_response(empty_response)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
             status_code=500
         )

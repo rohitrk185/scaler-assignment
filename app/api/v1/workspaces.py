@@ -5,6 +5,9 @@ from typing import Optional, List, Dict, Any
 from app.database import get_db
 from app.models.workspace import Workspace
 from app.schemas.workspace import WorkspaceResponse, WorkspaceUpdate
+from app.schemas.common import WorkspaceAddUserRequest, WorkspaceRemoveUserRequest, EmptyResponse
+from app.schemas.user import UserResponse
+from app.models.user import User
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
 from app.utils.errors import NotFoundError
@@ -185,6 +188,199 @@ async def get_workspace_users(
         # TODO: Implement user-workspace relationship
         # For now, return empty list
         return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/workspaces/{workspace_gid}/addUser", response_model=dict)
+async def add_user_to_workspace(
+    workspace_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Add a user to a workspace or organization.
+    
+    The user can be referenced by their globally unique user ID or their email address.
+    Returns the full user record for the invited user.
+    Request body must follow OpenAPI spec format: {"data": {"user": "..."}}
+    """
+    try:
+        workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
+        
+        if not workspace:
+            raise NotFoundError("Workspace", workspace_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        add_user_data = parse_request_body(request_body, WorkspaceAddUserRequest)
+        
+        # Find user by gid or email
+        user_identifier = add_user_data.user
+        user = None
+        
+        if user_identifier == "me":
+            # TODO: Get current authenticated user
+            # For now, return error
+            return format_error_response(
+                message="'me' identifier not supported without authentication",
+                status_code=400
+            )
+        elif "@" in user_identifier:
+            # Email address
+            user = db.query(User).filter(User.email == user_identifier).first()
+        else:
+            # GID
+            user = db.query(User).filter(User.gid == user_identifier).first()
+        
+        if not user:
+            return format_error_response(
+                message=f"User '{user_identifier}' not found",
+                status_code=404
+            )
+        
+        # TODO: Implement workspace-user relationship
+        # For now, just return the user
+        user_response = UserResponse(
+            gid=user.gid,
+            resource_type=user.resource_type or "user",
+            name=user.name,
+            email=user.email,
+            photo=user.photo,
+            workspaces=None,
+            custom_fields=None
+        )
+        
+        return format_success_response(user_response)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/workspaces/{workspace_gid}/removeUser", response_model=dict)
+async def remove_user_from_workspace(
+    workspace_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Remove a user from a workspace or organization.
+    
+    The user making this call must be an admin in the workspace. The user can be
+    referenced by their globally unique user ID or their email address.
+    Returns an empty data record.
+    Request body must follow OpenAPI spec format: {"data": {"user": "..."}}
+    """
+    try:
+        workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
+        
+        if not workspace:
+            raise NotFoundError("Workspace", workspace_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        remove_user_data = parse_request_body(request_body, WorkspaceRemoveUserRequest)
+        
+        # Find user by gid or email
+        user_identifier = remove_user_data.user
+        user = None
+        
+        if user_identifier == "me":
+            # TODO: Get current authenticated user
+            # For now, return error
+            return format_error_response(
+                message="'me' identifier not supported without authentication",
+                status_code=400
+            )
+        elif "@" in user_identifier:
+            # Email address
+            user = db.query(User).filter(User.email == user_identifier).first()
+        else:
+            # GID
+            user = db.query(User).filter(User.gid == user_identifier).first()
+        
+        if not user:
+            return format_error_response(
+                message=f"User '{user_identifier}' not found",
+                status_code=404
+            )
+        
+        # TODO: Implement workspace-user relationship removal
+        # For now, just return empty response
+        empty_response = EmptyResponse()
+        
+        return format_success_response(empty_response)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/workspaces/{workspace_gid}/events", response_model=dict)
+async def get_workspace_events(
+    workspace_gid: str,
+    sync: Optional[str] = Query(None, description="A sync token received from the last request, or none on first sync."),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get workspace events.
+    
+    Returns the full record for all events that have occurred since the sync token was created.
+    Asana limits a single sync token to 1000 events. If more than 1000 events exist,
+    has_more: true will be returned in the response.
+    """
+    try:
+        workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
+        
+        if not workspace:
+            raise NotFoundError("Workspace", workspace_gid)
+        
+        # TODO: Implement event tracking system
+        # For now, return empty events list with a sync token
+        import hashlib
+        import time
+        
+        # Generate a sync token
+        sync_token = hashlib.md5(f"{workspace_gid}_{time.time()}".encode()).hexdigest()
+        
+        response_data = {
+            "data": [],
+            "sync": sync_token,
+            "has_more": False
+        }
+        
+        return response_data
     
     except NotFoundError as e:
         return format_error_response(

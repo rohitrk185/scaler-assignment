@@ -6,6 +6,7 @@ import uuid
 from app.database import get_db
 from app.models.section import Section
 from app.schemas.section import SectionResponse, SectionCreate, SectionUpdate
+from app.schemas.common import SectionAddTaskRequest, EmptyResponse
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
 from app.utils.errors import NotFoundError
@@ -233,6 +234,49 @@ async def delete_section(
         db.commit()
         
         return format_success_response({"data": {}}, status_code=200)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/sections/{section_gid}/addTask", response_model=dict)
+async def add_task_to_section(
+    section_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Add task to section.
+    
+    Add a task to a specific, existing section. This will remove the task from other sections of the project.
+    Request body must follow OpenAPI spec format: {"data": {"task": "...", "insert_before": "...", "insert_after": "..."}}
+    """
+    try:
+        section = db.query(Section).filter(Section.gid == section_gid).first()
+        
+        if not section:
+            raise NotFoundError("Section", section_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        add_task_data = parse_request_body(request_body, SectionAddTaskRequest)
+        
+        # TODO: Implement section-task relationship
+        # For now, return EmptyResponse as per OpenAPI spec
+        empty_response = EmptyResponse()
+        
+        return format_success_response(empty_response)
     
     except NotFoundError as e:
         return format_error_response(

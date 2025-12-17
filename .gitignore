@@ -39,6 +39,9 @@ test_results.json
 .coverage
 htmlcov/
 
+# Analysis and documentation (temporary)
+OPENAPI_COMPLIANCE_ANALYSIS.md
+
 # Temporary fix/utility scripts (one-time use)
 scripts/fix_optional_fields.py
 scripts/fix_request_body_format.py

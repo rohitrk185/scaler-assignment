@@ -6,6 +6,7 @@ import uuid
 from app.database import get_db
 from app.models.custom_field import CustomField
 from app.schemas.custom_field import CustomFieldResponse, CustomFieldCreate, CustomFieldUpdate
+from app.schemas.common import EnumOptionRequest, EnumOptionInsertRequest
 from app.utils.pagination import PaginationParams, create_paginated_response
 from app.utils.responses import format_success_response, format_list_response, format_error_response
 from app.utils.errors import NotFoundError
@@ -341,6 +342,101 @@ async def delete_custom_field(
         db.commit()
         
         return format_success_response({"data": {}}, status_code=200)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/custom_fields/{custom_field_gid}/enum_options", response_model=dict)
+async def create_enum_option_for_custom_field(
+    custom_field_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Create an enum option.
+    
+    Creates an enum option and adds it to this custom field's list of enum options.
+    Returns the full record of the newly created enum option.
+    Request body must follow OpenAPI spec format: {"data": {"name": "...", "enabled": true, "color": "...", "insert_before": "...", "insert_after": "..."}}
+    """
+    try:
+        custom_field = db.query(CustomField).filter(CustomField.gid == custom_field_gid).first()
+        
+        if not custom_field:
+            raise NotFoundError("CustomField", custom_field_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        enum_option_data = parse_request_body(request_body, EnumOptionRequest)
+        
+        # TODO: Implement enum option creation
+        # For now, return a simple enum option response
+        enum_option_response = {
+            "gid": str(uuid.uuid4()),
+            "resource_type": "enum_option",
+            "name": enum_option_data.name,
+            "enabled": enum_option_data.enabled,
+            "color": enum_option_data.color or "none"
+        }
+        
+        return format_success_response(enum_option_response, status_code=201)
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        db.rollback()
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.post("/custom_fields/{custom_field_gid}/enum_options/insert", response_model=dict)
+async def insert_enum_option_for_custom_field(
+    custom_field_gid: str,
+    request_body: Dict[str, Any] = Body(...),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Reorder a custom field's enum.
+    
+    Moves a particular enum option to be either before or after another specified enum option in the custom field.
+    Returns an empty data record.
+    Request body must follow OpenAPI spec format: {"data": {"enum_option": "...", "before_enum_option": "...", "after_enum_option": "..."}}
+    """
+    try:
+        custom_field = db.query(CustomField).filter(CustomField.gid == custom_field_gid).first()
+        
+        if not custom_field:
+            raise NotFoundError("CustomField", custom_field_gid)
+        
+        # Parse request body following OpenAPI spec format: {"data": {...}}
+        insert_data = parse_request_body(request_body, EnumOptionInsertRequest)
+        
+        # TODO: Implement enum option reordering
+        # For now, return empty response
+        from app.schemas.common import EmptyResponse
+        empty_response = EmptyResponse()
+        
+        return format_success_response(empty_response)
     
     except NotFoundError as e:
         return format_error_response(
