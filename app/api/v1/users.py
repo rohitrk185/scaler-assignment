@@ -164,3 +164,203 @@ async def update_user(
             status_code=500
         )
 
+
+
+@router.get("/users/{user_gid}/favorites", response_model=dict)
+async def get_user_favorites(
+    user_gid: str,
+    resource_type: str = Query(..., description="The resource type of favorites to be returned.", enum=["portfolio", "project", "tag", "task", "user", "project_template"]),
+    workspace: str = Query(..., description="The workspace in which to get favorites."),
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a user's favorites.
+    
+    Returns all of a user's favorites in the given workspace, of the given type.
+    """
+    try:
+        user = db.query(User).filter(User.gid == user_gid).first()
+        
+        if not user:
+            raise NotFoundError("User", user_gid)
+        
+        # Verify workspace exists
+        from app.models.workspace import Workspace
+        workspace_obj = db.query(Workspace).filter(Workspace.gid == workspace).first()
+        if not workspace_obj:
+            return format_error_response(
+                message=f"Workspace '{workspace}' not found",
+                status_code=404
+            )
+        
+        # TODO: Implement user-favorites relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/users/{user_gid}/team_memberships", response_model=dict)
+async def get_user_team_memberships(
+    user_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a user's team memberships.
+    
+    Returns the compact records for all teams the user is a member of.
+    """
+    try:
+        user = db.query(User).filter(User.gid == user_gid).first()
+        
+        if not user:
+            raise NotFoundError("User", user_gid)
+        
+        # TODO: Implement user-team_membership relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/users/{user_gid}/teams", response_model=dict)
+async def get_user_teams(
+    user_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a user's teams.
+    
+    Returns the compact records for all teams the user is a member of.
+    """
+    try:
+        user = db.query(User).filter(User.gid == user_gid).first()
+        
+        if not user:
+            raise NotFoundError("User", user_gid)
+        
+        # TODO: Implement user-team relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/users/{user_gid}/user_task_list", response_model=dict)
+async def get_user_task_list(
+    user_gid: str,
+    workspace: str = Query(..., description="The workspace in which to get the user task list."),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a user's task list.
+    
+    Returns the full record for a user's task list.
+    """
+    try:
+        user = db.query(User).filter(User.gid == user_gid).first()
+        
+        if not user:
+            raise NotFoundError("User", user_gid)
+        
+        # Verify workspace exists
+        from app.models.workspace import Workspace
+        workspace_obj = db.query(Workspace).filter(Workspace.gid == workspace).first()
+        if not workspace_obj:
+            return format_error_response(
+                message=f"Workspace '{workspace}' not found",
+                status_code=404
+            )
+        
+        # TODO: Implement user-task_list relationship
+        # For now, return empty response
+        return format_success_response({})
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/users/{user_gid}/workspace_memberships", response_model=dict)
+async def get_user_workspace_memberships(
+    user_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a user's workspace memberships.
+    
+    Returns the compact records for all workspace memberships for the user.
+    """
+    try:
+        user = db.query(User).filter(User.gid == user_gid).first()
+        
+        if not user:
+            raise NotFoundError("User", user_gid)
+        
+        # TODO: Implement user-workspace_membership relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )

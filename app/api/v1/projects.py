@@ -743,3 +743,112 @@ async def remove_followers_from_project(
             message=str(e),
             status_code=500
         )
+
+
+@router.get("/projects/{project_gid}/sections", response_model=dict)
+async def get_project_sections(
+    project_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a project's sections.
+    
+    Returns the compact records for all sections in the specified project.
+    """
+    try:
+        project = db.query(Project).filter(Project.gid == project_gid).first()
+        
+        if not project:
+            raise NotFoundError("Project", project_gid)
+        
+        # TODO: Implement project-section relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/projects/{project_gid}/tasks", response_model=dict)
+async def get_project_tasks(
+    project_gid: str,
+    completed_since: Optional[str] = Query(None, description="Only return tasks that are either incomplete or that have been completed since this time. Accepts a date-time string or the keyword *now*."),
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a project's tasks.
+    
+    Returns the compact task records for all tasks within the given project.
+    """
+    try:
+        project = db.query(Project).filter(Project.gid == project_gid).first()
+        
+        if not project:
+            raise NotFoundError("Project", project_gid)
+        
+        # TODO: Implement project-task relationship with completed_since filter
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/projects/{project_gid}/custom_field_settings", response_model=dict)
+async def get_project_custom_field_settings(
+    project_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a project's custom field settings.
+    
+    Returns a list of all of the project's custom field settings.
+    """
+    try:
+        project = db.query(Project).filter(Project.gid == project_gid).first()
+        
+        if not project:
+            raise NotFoundError("Project", project_gid)
+        
+        # TODO: Implement project-custom_field_setting relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )

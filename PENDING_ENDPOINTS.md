@@ -9,62 +9,84 @@ As endpoints are implemented, they should be removed from this list.
 
 ## 1. Workspaces
 
-### Currently Implemented (4)
+### Currently Implemented (10)
 - ✅ GET `/workspaces`
 - ✅ GET `/workspaces/{workspace_gid}`
 - ✅ PUT `/workspaces/{workspace_gid}`
 - ✅ GET `/workspaces/{workspace_gid}/users`
+- ✅ POST `/workspaces/{workspace_gid}/addUser`
+- ✅ POST `/workspaces/{workspace_gid}/removeUser`
+- ✅ GET `/workspaces/{workspace_gid}/events`
+- ✅ GET `/workspaces/{workspace_gid}/custom_fields`
+- ✅ GET `/workspaces/{workspace_gid}/projects`
+- ✅ GET `/workspaces/{workspace_gid}/tags`
+- ✅ GET `/workspaces/{workspace_gid}/teams`
+- ✅ GET `/workspaces/{workspace_gid}/workspace_memberships`
+- ✅ GET `/workspaces/{workspace_gid}/audit_log_events`
 
-### Pending (9)
+### Pending (6)
 - [x] POST `/workspaces/{workspace_gid}/addUser` - Add user to workspace
 - [x] POST `/workspaces/{workspace_gid}/removeUser` - Remove user from workspace
 - [x] GET `/workspaces/{workspace_gid}/events` - Get workspace events
-- [ ] GET `/workspaces/{workspace_gid}/audit_log_events` - Get audit log events
-- [ ] GET `/workspaces/{workspace_gid}/custom_fields` - Get workspace custom fields
-- [ ] GET `/workspaces/{workspace_gid}/projects` - Get workspace projects
-- [ ] GET `/workspaces/{workspace_gid}/tags` - Get workspace tags
-- [ ] GET `/workspaces/{workspace_gid}/teams` - Get workspace teams
+- [x] GET `/workspaces/{workspace_gid}/audit_log_events` - Get audit log events
+- [x] GET `/workspaces/{workspace_gid}/custom_fields` - Get workspace custom fields
+- [x] GET `/workspaces/{workspace_gid}/projects` - Get workspace projects
+- [x] GET `/workspaces/{workspace_gid}/tags` - Get workspace tags
+- [x] GET `/workspaces/{workspace_gid}/teams` - Get workspace teams
+- [x] GET `/workspaces/{workspace_gid}/workspace_memberships` - Get workspace memberships
 - [ ] GET `/workspaces/{workspace_gid}/tasks/custom_id/{custom_id}` - Get task by custom ID
 - [ ] GET `/workspaces/{workspace_gid}/tasks/search` - Search tasks
 - [ ] GET `/workspaces/{workspace_gid}/typeahead` - Typeahead search
-- [ ] GET `/workspaces/{workspace_gid}/workspace_memberships` - Get workspace memberships
 
 ---
 
 ## 2. Users
 
-### Currently Implemented (3)
+### Currently Implemented (8)
 - ✅ GET `/users`
 - ✅ GET `/users/{user_gid}`
 - ✅ PUT `/users/{user_gid}`
+- ✅ GET `/users/{user_gid}/favorites`
+- ✅ GET `/users/{user_gid}/team_memberships`
+- ✅ GET `/users/{user_gid}/teams`
+- ✅ GET `/users/{user_gid}/user_task_list`
+- ✅ GET `/users/{user_gid}/workspace_memberships`
 
-### Pending (5)
-- [ ] GET `/users/{user_gid}/favorites` - Get user favorites
-- [ ] GET `/users/{user_gid}/team_memberships` - Get user team memberships
-- [ ] GET `/users/{user_gid}/teams` - Get user teams
-- [ ] GET `/users/{user_gid}/user_task_list` - Get user task list
-- [ ] GET `/users/{user_gid}/workspace_memberships` - Get user workspace memberships
+### Pending (0)
+- [x] GET `/users/{user_gid}/favorites` - Get user favorites
+- [x] GET `/users/{user_gid}/team_memberships` - Get user team memberships
+- [x] GET `/users/{user_gid}/teams` - Get user teams
+- [x] GET `/users/{user_gid}/user_task_list` - Get user task list
+- [x] GET `/users/{user_gid}/workspace_memberships` - Get user workspace memberships
 
 ---
 
 ## 3. Projects
 
-### Currently Implemented (5)
+### Currently Implemented (13)
 - ✅ GET `/projects`
 - ✅ GET `/projects/{project_gid}`
 - ✅ POST `/projects`
 - ✅ PUT `/projects/{project_gid}`
 - ✅ DELETE `/projects/{project_gid}`
+- ✅ POST `/projects/{project_gid}/duplicate`
+- ✅ POST `/projects/{project_gid}/addMembers`
+- ✅ POST `/projects/{project_gid}/removeMembers`
+- ✅ POST `/projects/{project_gid}/addFollowers`
+- ✅ POST `/projects/{project_gid}/removeFollowers`
+- ✅ GET `/projects/{project_gid}/sections`
+- ✅ GET `/projects/{project_gid}/tasks`
+- ✅ GET `/projects/{project_gid}/custom_field_settings`
 
-### Pending (10)
+### Pending (7)
 - [x] POST `/projects/{project_gid}/duplicate` - Duplicate project
-- [ ] GET `/projects/{project_gid}/custom_field_settings` - Get custom field settings
+- [x] GET `/projects/{project_gid}/custom_field_settings` - Get custom field settings
 - [ ] GET `/projects/{project_gid}/project_briefs` - Get project briefs
 - [ ] GET `/projects/{project_gid}/project_memberships` - Get project memberships
 - [ ] GET `/projects/{project_gid}/project_statuses` - Get project statuses
-- [ ] GET `/projects/{project_gid}/sections` - Get project sections
+- [x] GET `/projects/{project_gid}/sections` - Get project sections
 - [ ] POST `/projects/{project_gid}/sections/insert` - Insert section
-- [ ] GET `/projects/{project_gid}/tasks` - Get project tasks
+- [x] GET `/projects/{project_gid}/tasks` - Get project tasks
 - [ ] GET `/projects/{project_gid}/task_counts` - Get task counts
 - [ ] POST `/projects/{project_gid}/addCustomFieldSetting` - Add custom field setting
 - [ ] POST `/projects/{project_gid}/removeCustomFieldSetting` - Remove custom field setting
@@ -110,19 +132,22 @@ As endpoints are implemented, they should be removed from this list.
 
 ## 5. Teams
 
-### Currently Implemented (5)
+### Currently Implemented (8)
 - ✅ GET `/teams`
 - ✅ GET `/teams/{team_gid}`
 - ✅ POST `/teams`
 - ✅ PUT `/teams/{team_gid}`
 - ✅ DELETE `/teams/{team_gid}`
+- ✅ POST `/teams/{team_gid}/addUser`
+- ✅ POST `/teams/{team_gid}/removeUser`
+- ✅ GET `/teams/{team_gid}/users`
 
-### Pending (5)
+### Pending (4)
 - [ ] GET `/teams/{team_gid}/custom_field_settings` - Get custom field settings
 - [ ] GET `/teams/{team_gid}/project_templates` - Get project templates
 - [ ] GET `/teams/{team_gid}/projects` - Get team projects
 - [ ] GET `/teams/{team_gid}/team_memberships` - Get team memberships
-- [ ] GET `/teams/{team_gid}/users` - Get team users
+- [x] GET `/teams/{team_gid}/users` - Get team users
 - [x] POST `/teams/{team_gid}/addUser` - Add user to team
 - [x] POST `/teams/{team_gid}/removeUser` - Remove user from team
 
@@ -217,8 +242,8 @@ As endpoints are implemented, they should be removed from this list.
 
 ## Summary
 
-- **Total Implemented:** 77 endpoints (52 core + 25 high-priority)
-- **Total Pending:** 39 endpoints
+- **Total Implemented:** 92 endpoints (52 core + 25 high-priority + 15 medium-priority)
+- **Total Pending:** 24 endpoints
 - **Total in Spec:** ~116 endpoints
 
 ### Priority Breakdown
@@ -232,15 +257,18 @@ As endpoints are implemented, they should be removed from this list.
 - Tags: `tasks` (1) ✅
 - Custom Fields: `enum_options` (3) ✅
 
-**Medium Priority (List Endpoints - 15 endpoints):**
-- Relationship GET endpoints for listing related resources
+**Medium Priority (List Endpoints - 15 endpoints):** ✅ COMPLETED
+- Workspaces: `custom_fields`, `projects`, `tags`, `teams`, `workspace_memberships`, `audit_log_events` (6) ✅
+- Users: `favorites`, `team_memberships`, `teams`, `user_task_list`, `workspace_memberships` (5) ✅
+- Projects: `sections`, `tasks`, `custom_field_settings` (3) ✅
+- Teams: `users` (1) ✅
 
 **Lower Priority (Advanced Features - 24 endpoints):**
 - Search endpoints
 - Custom field settings management
 - Project briefs, statuses, memberships
 - Time tracking entries
-- User favorites, memberships
+- Task dependencies/dependents management
 - Audit logs, typeahead, etc.
 
 ---

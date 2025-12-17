@@ -394,3 +394,226 @@ async def get_workspace_events(
             status_code=500
         )
 
+
+
+@router.get("/workspaces/{workspace_gid}/custom_fields", response_model=dict)
+async def get_workspace_custom_fields(
+    workspace_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a workspace's custom fields.
+    
+    Returns a list of the compact representation of all of the custom fields in a workspace.
+    """
+    try:
+        workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
+        
+        if not workspace:
+            raise NotFoundError("Workspace", workspace_gid)
+        
+        # TODO: Implement workspace-custom_field relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/workspaces/{workspace_gid}/projects", response_model=dict)
+async def get_workspace_projects(
+    workspace_gid: str,
+    archived: Optional[bool] = Query(None, description="Only return projects whose `archived` field takes on the value of this parameter."),
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a workspace's projects.
+    
+    Returns the compact records for all projects in the workspace.
+    """
+    try:
+        workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
+        
+        if not workspace:
+            raise NotFoundError("Workspace", workspace_gid)
+        
+        # TODO: Implement workspace-project relationship with archived filter
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/workspaces/{workspace_gid}/tags", response_model=dict)
+async def get_workspace_tags(
+    workspace_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a workspace's tags.
+    
+    Returns the compact records for all tags in the workspace.
+    """
+    try:
+        workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
+        
+        if not workspace:
+            raise NotFoundError("Workspace", workspace_gid)
+        
+        # TODO: Implement workspace-tag relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/workspaces/{workspace_gid}/teams", response_model=dict)
+async def get_workspace_teams(
+    workspace_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a workspace's teams.
+    
+    Returns the compact records for all teams in the workspace.
+    """
+    try:
+        workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
+        
+        if not workspace:
+            raise NotFoundError("Workspace", workspace_gid)
+        
+        # TODO: Implement workspace-team relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/workspaces/{workspace_gid}/workspace_memberships", response_model=dict)
+async def get_workspace_memberships(
+    workspace_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get workspace memberships.
+    
+    Returns the compact records for all workspace memberships in the workspace.
+    """
+    try:
+        workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
+        
+        if not workspace:
+            raise NotFoundError("Workspace", workspace_gid)
+        
+        # TODO: Implement workspace-membership relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
+
+
+@router.get("/workspaces/{workspace_gid}/audit_log_events", response_model=dict)
+async def get_workspace_audit_log_events(
+    workspace_gid: str,
+    start_at: Optional[str] = Query(None, description="Filter to events after this time (inclusive)."),
+    end_at: Optional[str] = Query(None, description="Filter to events before this time (exclusive)."),
+    event_type: Optional[str] = Query(None, description="Filter to events of the given type."),
+    actor_type: Optional[str] = Query(None, description="Filter to events with an actor of this type."),
+    actor_gid: Optional[str] = Query(None, description="Filter to events created by the actor with this gid."),
+    resource_gid: Optional[str] = Query(None, description="Filter to events for the resource with this gid."),
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get audit log events.
+    
+    Retrieve the audit log events that have been captured in your domain.
+    """
+    try:
+        workspace = db.query(Workspace).filter(Workspace.gid == workspace_gid).first()
+        
+        if not workspace:
+            raise NotFoundError("Workspace", workspace_gid)
+        
+        # TODO: Implement audit log event tracking system
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )

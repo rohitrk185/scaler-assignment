@@ -432,3 +432,39 @@ async def remove_user_from_team(
             message=str(e),
             status_code=500
         )
+
+
+@router.get("/teams/{team_gid}/users", response_model=dict)
+async def get_team_users(
+    team_gid: str,
+    pagination: PaginationParams = Depends(),
+    opt_fields: Optional[str] = Query(None),
+    opt_pretty: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Get users in a team.
+    
+    Returns the compact records for all users in the team.
+    """
+    try:
+        team = db.query(Team).filter(Team.gid == team_gid).first()
+        
+        if not team:
+            raise NotFoundError("Team", team_gid)
+        
+        # TODO: Implement team-user relationship
+        # For now, return empty list
+        return format_list_response([])
+    
+    except NotFoundError as e:
+        return format_error_response(
+            message=str(e.message),
+            help_text=str(e.help_text),
+            status_code=e.status_code
+        )
+    except Exception as e:
+        return format_error_response(
+            message=str(e),
+            status_code=500
+        )
